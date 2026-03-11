@@ -1,0 +1,29 @@
+<view class="container">
+  <!-- 浇水提醒区 -->
+  <view class="reminder-section" wx:if="{{reminders.length > 0}}">
+    <view class="section-title">💧 今日浇水提醒</view>
+    <view class="reminder-list">
+      <view class="reminder-item" wx:for="{{reminders}}" wx:key="id">
+        <text>{{item.name}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 植物列表 -->
+  <view class="section-title" wx:if="{{plants.length > 0}}">我的植物</view>
+  <plant-card
+    wx:for="{{plants}}"
+    wx:key="id"
+    plant="{{item}}"
+    bindtap="goDetail"
+  />
+
+  <!-- 空状态 -->
+  <view class="empty" wx:if="{{!loading && plants.length === 0}}">
+    <text class="empty-icon">🌿</text>
+    <text class="empty-text">还没有植物，点击下方按钮添加吧</text>
+  </view>
+
+  <!-- 添加按钮 (FAB) -->
+  <view class="fab" bindtap="goAdd">+</view>
+</view>

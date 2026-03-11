@@ -1,0 +1,60 @@
+.card {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.plant-name {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.plant-category {
+  font-size: 24rpx;
+  color: #999;
+  background: #f0f0f0;
+  padding: 4rpx 16rpx;
+  border-radius: 8rpx;
+}
+
+.card-body {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.interval {
+  font-size: 26rpx;
+  color: #666;
+}
+
+.status {
+  font-size: 24rpx;
+  padding: 4rpx 16rpx;
+  border-radius: 8rpx;
+}
+
+.status-ok {
+  color: #07c160;
+  background: #e8f5e9;
+}
+
+.status-today {
+  color: #ff9800;
+  background: #fff3e0;
+}
+
+.status-overdue {
+  color: #f44336;
+  background: #ffebee;
+}

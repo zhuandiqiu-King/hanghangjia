@@ -1,0 +1,35 @@
+<view class="container">
+  <!-- 拍照识别 -->
+  <view class="identify-btn" bindtap="handleIdentify" wx:if="{{mode === 'add'}}">
+    <text>📷 拍照识别植物</text>
+  </view>
+
+  <!-- 表单 -->
+  <view class="form">
+    <view class="form-item">
+      <text class="label">植物名称</text>
+      <input class="input" value="{{name}}" bindinput="onNameInput" placeholder="输入植物名称" />
+    </view>
+
+    <view class="form-item">
+      <text class="label">浇水间隔（天）</text>
+      <input class="input" type="number" value="{{wateringInterval}}" bindinput="onIntervalInput" />
+    </view>
+
+    <view class="form-item">
+      <text class="label">分类</text>
+      <picker range="{{categoryNames}}" value="{{categoryIndex}}" bindchange="onCategoryChange">
+        <view class="picker">{{categoryNames[categoryIndex]}}</view>
+      </picker>
+    </view>
+
+    <view class="form-item">
+      <text class="label">备注</text>
+      <textarea class="textarea" value="{{note}}" bindinput="onNoteInput" placeholder="可选" auto-height maxlength="500" />
+    </view>
+  </view>
+
+  <button class="btn-primary submit-btn" bindtap="handleSubmit" loading="{{submitting}}">
+    {{mode === 'edit' ? '保存修改' : '添加植物'}}
+  </button>
+</view>

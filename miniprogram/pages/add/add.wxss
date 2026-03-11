@@ -1,0 +1,67 @@
+.container {
+  padding: 24rpx;
+}
+
+.identify-btn {
+  background: #e8f5e9;
+  color: #2e7d32;
+  text-align: center;
+  padding: 24rpx;
+  border-radius: 16rpx;
+  margin-bottom: 32rpx;
+  font-size: 30rpx;
+}
+
+.identify-btn:active {
+  background: #c8e6c9;
+}
+
+.form {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 32rpx;
+}
+
+.form-item {
+  margin-bottom: 24rpx;
+}
+
+.form-item:last-child {
+  margin-bottom: 0;
+}
+
+.label {
+  font-size: 28rpx;
+  color: #666;
+  margin-bottom: 8rpx;
+  display: block;
+}
+
+.input {
+  border: 1rpx solid #e0e0e0;
+  border-radius: 8rpx;
+  padding: 16rpx;
+  font-size: 28rpx;
+}
+
+.picker {
+  border: 1rpx solid #e0e0e0;
+  border-radius: 8rpx;
+  padding: 16rpx;
+  font-size: 28rpx;
+  color: #333;
+}
+
+.textarea {
+  border: 1rpx solid #e0e0e0;
+  border-radius: 8rpx;
+  padding: 16rpx;
+  font-size: 28rpx;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.submit-btn {
+  margin-top: 16rpx;
+}

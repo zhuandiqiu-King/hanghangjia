@@ -1,0 +1,11 @@
+<view class="login-page">
+  <view class="logo-area">
+    <text class="logo-icon">🌱</text>
+    <text class="logo-title">Plant Sprite</text>
+    <text class="logo-desc">你的植物浇水小助手</text>
+  </view>
+
+  <button class="login-btn" bindtap="handleLogin" loading="{{loading}}">
+    微信授权登录
+  </button>
+</view>

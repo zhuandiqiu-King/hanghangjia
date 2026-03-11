@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Plant Sprite 🌱</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #f0f7f0;
+  color: #333;
+  min-height: 100vh;
+  padding-bottom: 80px;
+}
+
+/* 顶部标题栏 */
+.header {
+  background: linear-gradient(135deg, #43a047, #66bb6a);
+  color: #fff;
+  padding: 16px 20px;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.header h1 { font-size: 20px; font-weight: 600; }
+
+/* 提醒区 */
+.reminder-section {
+  margin: 16px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.reminder-section h2 {
+  font-size: 16px;
+  color: #43a047;
+  margin-bottom: 12px;
+}
+.reminder-empty {
+  color: #999;
+  font-size: 14px;
+  text-align: center;
+  padding: 8px 0;
+}
+.reminder-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+.reminder-item:last-child { border-bottom: none; }
+.reminder-name {
+  font-size: 15px;
+  font-weight: 500;
+}
+.reminder-overdue {
+  color: #e53935;
+  font-weight: 600;
+}
+.reminder-due {
+  color: #fb8c00;
+  font-weight: 500;
+}
+.tag-overdue {
+  font-size: 12px;
+  background: #ffebee;
+  color: #e53935;
+  padding: 2px 8px;
+  border-radius: 8px;
+  margin-left: 8px;
+}
+
+/* 植物列表 */
+.section-title {
+  font-size: 16px;
+  color: #43a047;
+  margin: 16px 16px 8px;
+  font-weight: 600;
+}
+.plant-list { padding: 0 16px; }
+
+.plant-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  position: relative;
+}
+.plant-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.plant-name {
+  font-size: 17px;
+  font-weight: 600;
+}
+.plant-category {
+  font-size: 14px;
+  color: #888;
+  margin-left: 6px;
+}
+.plant-meta {
+  font-size: 13px;
+  color: #888;
+  margin-top: 6px;
+  line-height: 1.6;
+}
+.plant-note {
+  font-size: 13px;
+  color: #aaa;
+  margin-top: 4px;
+  font-style: italic;
+  white-space: pre-line;
+}
+.plant-status {
+  display: inline-block;
+  font-size: 12px;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-weight: 500;
+}
+.status-ok { background: #e8f5e9; color: #388e3c; }
+.status-soon { background: #fff8e1; color: #f57f17; }
+.status-overdue { background: #ffebee; color: #c62828; }
+
+.plant-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.btn {
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+.btn:active { opacity: 0.7; }
+.btn-water { background: #e3f2fd; color: #1565c0; }
+.btn-edit { background: #f3e5f5; color: #7b1fa2; }
+.btn-delete { background: #fce4ec; color: #c62828; }
+.btn-record { background: #e8f5e9; color: #2e7d32; }
+.btn-primary {
+  background: #43a047;
+  color: #fff;
+  padding: 10px 20px;
+  font-size: 15px;
+}
+
+/* 浮动添加按钮 */
+.fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #43a047;
+  color: #fff;
+  font-size: 28px;
+  border: none;
+  box-shadow: 0 4px 12px rgba(67,160,71,0.4);
+  cursor: pointer;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+.fab:active { transform: scale(0.9); }
+
+/* 弹窗遮罩 */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 100;
+  align-items: flex-end;
+  justify-content: center;
+}
+.modal-overlay.active { display: flex; }
+
+.modal {
+  background: #fff;
+  border-radius: 16px 16px 0 0;
+  width: 100%;
+  max-width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 24px 20px;
+  animation: slideUp 0.3s ease;
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.modal h3 {
+  font-size: 18px;
+  margin-bottom: 16px;
+  color: #333;
+}
+.modal-close {
+  float: right;
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: #999;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+/* 表单 */
+.form-group {
+  margin-bottom: 16px;
+}
+.form-group label {
+  display: block;
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #43a047;
+}
+.form-group textarea { resize: vertical; min-height: 60px; }
+
+/* 浇水记录弹窗 */
+.record-list { list-style: none; }
+.record-item {
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+  color: #555;
+}
+.record-item:last-child { border-bottom: none; }
+.record-empty {
+  text-align: center;
+  color: #999;
+  padding: 20px 0;
+  font-size: 14px;
+}
+
+/* 加载状态 */
+.loading {
+  text-align: center;
+  color: #999;
+  padding: 32px 0;
+  font-size: 14px;
+}
+
+/* 确认弹窗 */
+.confirm-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+.confirm-overlay.active { display: flex; }
+.confirm-box {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  width: 280px;
+  text-align: center;
+}
+.confirm-box p { font-size: 15px; margin-bottom: 20px; color: #333; }
+.confirm-btns { display: flex; gap: 12px; justify-content: center; }
+.confirm-btns .btn { flex: 1; }
+.btn-cancel { background: #eee; color: #666; }
+
+/* Toast 提示 */
+.toast {
+  position: fixed;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.75);
+  color: #fff;
+  padding: 10px 24px;
+  border-radius: 20px;
+  font-size: 14px;
+  z-index: 300;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; }
+
+/* 拍照识别区域 */
+.identify-section {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #f0f7f0;
+  border-radius: 10px;
+  text-align: center;
+}
+.btn-identify {
+  background: linear-gradient(135deg, #43a047, #66bb6a);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 15px;
+  cursor: pointer;
+  font-weight: 500;
+  width: 100%;
+}
+.btn-identify:active { opacity: 0.8; }
+.btn-identify:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.identify-preview {
+  margin-top: 10px;
+  display: none;
+}
+.identify-preview img {
+  max-width: 100%;
+  max-height: 160px;
+  border-radius: 8px;
+  border: 2px solid #c8e6c9;
+}
+.identify-loading {
+  display: none;
+  margin-top: 10px;
+  color: #43a047;
+  font-size: 14px;
+}
+.identify-loading .spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #c8e6c9;
+  border-top-color: #43a047;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* PC 端响应式适配 */
+@media (min-width: 768px) {
+  .header h1 { font-size: 24px; }
+  .reminder-section { max-width: 900px; margin: 16px auto; }
+  .section-title { max-width: 900px; margin: 16px auto 8px; }
+  .plant-list { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .modal-overlay { align-items: center; }
+  .modal { border-radius: 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- 顶部 -->
+<div class="header">
+  <h1>🌱 Plant Sprite</h1>
+</div>
+
+<!-- 今日提醒 -->
+<div class="reminder-section">
+  <h2>📢 今日提醒</h2>
+  <div id="reminderList"><div class="loading">加载中...</div></div>
+</div>
+
+<!-- 植物列表 -->
+<div class="section-title">🌿 我的植物</div>
+<div class="plant-list" id="plantList">
+  <div class="loading">加载中...</div>
+</div>
+
+<!-- 浮动添加按钮 -->
+<button class="fab" onclick="openAddModal()">+</button>
+
+<!-- 添加/编辑弹窗 -->
+<div class="modal-overlay" id="plantModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('plantModal')">&times;</button>
+    <h3 id="modalTitle">添加植物</h3>
+    <form id="plantForm" onsubmit="submitPlant(event)">
+      <input type="hidden" id="editPlantId">
+      <!-- 拍照识别区域 -->
+      <div class="identify-section" id="identifySection">
+        <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none" onchange="onPhotoSelected(event)">
+        <button type="button" class="btn-identify" id="identifyBtn" onclick="document.getElementById('photoInput').click()">
+          📷 拍照识别植物
+        </button>
+        <div class="identify-preview" id="identifyPreview">
+          <img id="previewImg" src="" alt="预览">
+        </div>
+        <div class="identify-loading" id="identifyLoading">
+          <span class="spinner"></span>正在识别中，请稍候...
+        </div>
+      </div>
+      <div class="form-group">
+        <label>植物名称</label>
+        <input type="text" id="plantName" required maxlength="100" placeholder="例如：绿萝">
+      </div>
+      <div class="form-group">
+        <label>浇水周期（天）</label>
+        <input type="number" id="plantInterval" required min="1" max="365" placeholder="例如：3">
+      </div>
+      <div class="form-group">
+        <label>分类</label>
+        <select id="plantCategory">
+          <option value="indoor">🪴 室内</option>
+          <option value="outdoor">🌻 室外</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>备注</label>
+        <textarea id="plantNote" placeholder="可选备注..."></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%">保存</button>
+    </form>
+  </div>
+</div>
+
+<!-- 浇水记录弹窗 -->
+<div class="modal-overlay" id="recordModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('recordModal')">&times;</button>
+    <h3 id="recordTitle">浇水记录</h3>
+    <ul class="record-list" id="recordList"></ul>
+  </div>
+</div>
+
+<!-- 确认弹窗 -->
+<div class="confirm-overlay" id="confirmDialog">
+  <div class="confirm-box">
+    <p id="confirmMsg">确认操作？</p>
+    <div class="confirm-btns">
+      <button class="btn btn-cancel" onclick="closeConfirm()">取消</button>
+      <button class="btn btn-delete" id="confirmOk">确认</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+const API = '/api';
+
+// ---- 工具函数 ----
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function openModal(id) {
+  document.getElementById(id).classList.add('active');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+}
+
+// 计算浇水状态: ok / soon / overdue
+function getStatus(nextDate) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const next = new Date(nextDate);
+  const diff = Math.ceil((next - today) / 86400000);
+  if (diff < 0) return 'overdue';
+  if (diff <= 3) return 'soon';
+  return 'ok';
+}
+
+function statusText(status) {
+  if (status === 'overdue') return '已逾期';
+  if (status === 'soon') return '即将到期';
+  return '正常';
+}
+
+function categoryEmoji(cat) {
+  return cat === 'outdoor' ? '🌻 室外' : '🪴 室内';
+}
+
+function formatDate(d) {
+  return new Date(d).toLocaleDateString('zh-CN');
+}
+
+function formatDateTime(d) {
+  return new Date(d).toLocaleString('zh-CN');
+}
+
+// ---- 数据加载 ----
+async function loadReminders() {
+  const el = document.getElementById('reminderList');
+  try {
+    const res = await fetch(`${API}/reminders`);
+    const list = await res.json();
+    if (!list.length) {
+      el.innerHTML = '<div class="reminder-empty">今天没有需要浇水的植物 🎉</div>';
+      return;
+    }
+    el.innerHTML = list.map(p => {
+      const status = getStatus(p.next_watering_date);
+      const cls = status === 'overdue' ? 'reminder-overdue' : 'reminder-due';
+      const tag = status === 'overdue' ? '<span class="tag-overdue">逾期</span>' : '';
+      return `<div class="reminder-item">
+        <span class="reminder-name ${cls}">${esc(p.name)}${tag}</span>
+        <button class="btn btn-water" onclick="waterPlant(${p.id})">💧 浇水</button>
+      </div>`;
+    }).join('');
+  } catch {
+    el.innerHTML = '<div class="reminder-empty">加载失败</div>';
+  }
+}
+
+async function loadPlants() {
+  const el = document.getElementById('plantList');
+  try {
+    const res = await fetch(`${API}/plants`);
+    const list = await res.json();
+    if (!list.length) {
+      el.innerHTML = '<div class="loading">还没有植物，点击右下角 + 添加吧</div>';
+      return;
+    }
+    el.innerHTML = list.map(p => {
+      const status = getStatus(p.next_watering_date);
+      return `<div class="plant-card">
+        <div class="plant-card-header">
+          <span>
+            <span class="plant-name">${esc(p.name)}</span>
+            <span class="plant-category">${categoryEmoji(p.category)}</span>
+          </span>
+          <span class="plant-status status-${status}">${statusText(status)}</span>
+        </div>
+        <div class="plant-meta">
+          每 <b>${p.watering_interval}</b> 天浇水 · 下次：${formatDate(p.next_watering_date)}
+        </div>
+        ${p.note ? `<div class="plant-note">${esc(p.note)}</div>` : ''}
+        <div class="plant-actions">
+          <button class="btn btn-water" onclick="waterPlant(${p.id})">💧 浇水</button>
+          <button class="btn btn-record" onclick="showRecords(${p.id}, '${esc(p.name)}')">📋 记录</button>
+          <button class="btn btn-edit" onclick="openEditModal(${p.id})">✏️ 编辑</button>
+          <button class="btn btn-delete" onclick="confirmDelete(${p.id}, '${esc(p.name)}')">🗑 删除</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch {
+    el.innerHTML = '<div class="loading">加载失败，请刷新重试</div>';
+  }
+}
+
+// 防 XSS
+function esc(s) {
+  if (!s) return '';
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// ---- 浇水 ----
+async function waterPlant(id) {
+  try {
+    const res = await fetch(`${API}/plants/${id}/water`, { method: 'POST' });
+    if (!res.ok) throw new Error();
+    showToast('浇水成功 💧');
+    loadReminders();
+    loadPlants();
+  } catch {
+    showToast('浇水失败');
+  }
+}
+
+// ---- 添加/编辑植物 ----
+function openAddModal() {
+  document.getElementById('modalTitle').textContent = '添加植物';
+  document.getElementById('editPlantId').value = '';
+  document.getElementById('plantForm').reset();
+  // 重置识别区域
+  document.getElementById('identifySection').style.display = '';
+  document.getElementById('identifyPreview').style.display = 'none';
+  document.getElementById('identifyLoading').style.display = 'none';
+  document.getElementById('identifyBtn').disabled = false;
+  openModal('plantModal');
+}
+
+async function openEditModal(id) {
+  try {
+    const res = await fetch(`${API}/plants/${id}`);
+    const p = await res.json();
+    document.getElementById('modalTitle').textContent = '编辑植物';
+    document.getElementById('editPlantId').value = id;
+    document.getElementById('plantName').value = p.name;
+    document.getElementById('plantInterval').value = p.watering_interval;
+    document.getElementById('plantCategory').value = p.category;
+    document.getElementById('plantNote').value = p.note || '';
+    // 编辑模式隐藏识别区域
+    document.getElementById('identifySection').style.display = 'none';
+    openModal('plantModal');
+  } catch {
+    showToast('获取植物信息失败');
+  }
+}
+
+// ---- 拍照识别 ----
+function compressImage(file, maxSize, quality) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        let w = img.width, h = img.height;
+        if (w > maxSize || h > maxSize) {
+          if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
+          else { w = Math.round(w * maxSize / h); h = maxSize; }
+        }
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function onPhotoSelected(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  // 显示预览
+  const preview = document.getElementById('identifyPreview');
+  const previewImg = document.getElementById('previewImg');
+  const loading = document.getElementById('identifyLoading');
+  const btn = document.getElementById('identifyBtn');
+
+  const base64 = await compressImage(file, 1024, 0.8);
+  previewImg.src = base64;
+  preview.style.display = 'block';
+  loading.style.display = 'block';
+  btn.disabled = true;
+
+  try {
+    // 去掉 data:image/jpeg;base64, 前缀，后端会自行拼接
+    const pureBase64 = base64.split(',')[1];
+    const res = await fetch(`${API}/plants/identify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: pureBase64 }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => null);
+      throw new Error(err?.detail || '识别失败');
+    }
+    const data = await res.json();
+    // 自动填充表单
+    document.getElementById('plantName').value = data.name || '';
+    document.getElementById('plantInterval').value = data.watering_interval || 7;
+    document.getElementById('plantCategory').value = data.category || 'indoor';
+    const noteText = `【植物简介】\n${data.description}\n\n【养护建议】\n${data.care_tips}`;
+    document.getElementById('plantNote').value = noteText;
+    // 自动撑高 textarea
+    const ta = document.getElementById('plantNote');
+    ta.style.height = 'auto';
+    ta.style.height = ta.scrollHeight + 'px';
+    showToast('识别成功，请确认信息后保存');
+  } catch (err) {
+    showToast(err.message || '识别失败，请手动填写');
+  } finally {
+    loading.style.display = 'none';
+    btn.disabled = false;
+    // 清空 input 以便再次选择同一张图片
+    e.target.value = '';
+  }
+}
+
+async function submitPlant(e) {
+  e.preventDefault();
+  const id = document.getElementById('editPlantId').value;
+  const data = {
+    name: document.getElementById('plantName').value.trim(),
+    watering_interval: parseInt(document.getElementById('plantInterval').value),
+    category: document.getElementById('plantCategory').value,
+    note: document.getElementById('plantNote').value.trim() || null,
+  };
+  const url = id ? `${API}/plants/${id}` : `${API}/plants`;
+  const method = id ? 'PUT' : 'POST';
+  try {
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => null);
+      throw new Error(err?.detail || '操作失败');
+    }
+    showToast(id ? '修改成功' : '添加成功 🌱');
+    closeModal('plantModal');
+    loadPlants();
+    loadReminders();
+  } catch (err) {
+    showToast(err.message || '操作失败');
+  }
+}
+
+// ---- 删除 ----
+let pendingDeleteId = null;
+function confirmDelete(id, name) {
+  pendingDeleteId = id;
+  document.getElementById('confirmMsg').textContent = `确认删除「${name}」？`;
+  document.getElementById('confirmDialog').classList.add('active');
+  document.getElementById('confirmOk').onclick = doDelete;
+}
+function closeConfirm() {
+  document.getElementById('confirmDialog').classList.remove('active');
+  pendingDeleteId = null;
+}
+async function doDelete() {
+  if (!pendingDeleteId) return;
+  try {
+    const res = await fetch(`${API}/plants/${pendingDeleteId}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error();
+    showToast('已删除');
+    closeConfirm();
+    loadPlants();
+    loadReminders();
+  } catch {
+    showToast('删除失败');
+    closeConfirm();
+  }
+}
+
+// ---- 浇水记录 ----
+async function showRecords(id, name) {
+  document.getElementById('recordTitle').textContent = `${name} 的浇水记录`;
+  const el = document.getElementById('recordList');
+  el.innerHTML = '<div class="loading">加载中...</div>';
+  openModal('recordModal');
+  try {
+    const res = await fetch(`${API}/plants/${id}/records`);
+    const list = await res.json();
+    if (!list.length) {
+      el.innerHTML = '<div class="record-empty">暂无浇水记录</div>';
+      return;
+    }
+    el.innerHTML = list.map(r =>
+      `<li class="record-item">💧 ${formatDateTime(r.watered_at)}</li>`
+    ).join('');
+  } catch {
+    el.innerHTML = '<div class="record-empty">加载失败</div>';
+  }
+}
+
+// ---- 初始化 ----
+loadReminders();
+loadPlants();
+</script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "Plant Sprite",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "plant-card": "/components/plant-card/plant-card"
+  }
+}

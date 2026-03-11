@@ -1,0 +1,39 @@
+<view class="container" wx:if="{{plant}}">
+  <!-- 植物信息 -->
+  <view class="info-card">
+    <view class="info-header">
+      <text class="plant-name">{{plant.name}}</text>
+      <text class="plant-category">{{plant.category === 'indoor' ? '室内' : '室外'}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">浇水间隔</text>
+      <text class="info-value">每 {{plant.watering_interval}} 天</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">下次浇水</text>
+      <text class="info-value">{{plant.next_watering_date}}</text>
+    </view>
+    <view class="info-row" wx:if="{{plant.note}}">
+      <text class="info-label">备注</text>
+      <text class="info-value note">{{plant.note}}</text>
+    </view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="actions">
+    <view class="action-btn water-btn" bindtap="handleWater">💧 浇水</view>
+    <view class="action-btn edit-btn" bindtap="handleEdit">✏️ 编辑</view>
+    <view class="action-btn delete-btn" bindtap="handleDelete">🗑️ 删除</view>
+  </view>
+
+  <!-- 浇水记录 -->
+  <view class="records-section">
+    <text class="section-title">浇水记录</text>
+    <view wx:if="{{records.length === 0}}" class="empty-records">
+      <text>暂无浇水记录</text>
+    </view>
+    <view class="record-item" wx:for="{{records}}" wx:key="id">
+      <text class="record-time">{{item.watered_at}}</text>
+    </view>
+  </view>
+</view>

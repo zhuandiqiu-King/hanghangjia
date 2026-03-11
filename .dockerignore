@@ -1,0 +1,10 @@
+__pycache__
+*.pyc
+tests/
+miniprogram/
+docs/
+plant_sprite.db
+.pytest_cache
+.git
+.gitignore
+*.md
