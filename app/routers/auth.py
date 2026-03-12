@@ -1,6 +1,8 @@
 """微信登录相关接口"""
 from __future__ import annotations
 
+import os
+
 from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -16,7 +18,11 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 @router.post("/login", response_model=LoginResponse)
 async def login(req: WxLoginRequest, db: Session = Depends(get_db)):
     """微信登录：code → openid → 查/创建用户 → 返回 JWT"""
-    openid = await wx_code2session(req.code)
+    # 开发模式：跳过微信验证，用 code 作为 openid
+    if os.getenv("DEV_MODE") == "1":
+        openid = f"dev_{req.code}"
+    else:
+        openid = await wx_code2session(req.code)
 
     # 查找或创建用户
     user = db.scalars(select(User).where(User.openid == openid)).first()
