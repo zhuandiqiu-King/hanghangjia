@@ -1,7 +1,7 @@
 /**
  * Token 存取 + 微信登录流程
  */
-const { post } = require('./api')
+const api = require('./api')
 
 function getToken() {
   return wx.getStorageSync('token') || ''
@@ -28,7 +28,7 @@ function login(nickname, avatarUrl) {
           reject(new Error('wx.login 失败'))
           return
         }
-        post('/api/auth/login', {
+        api.post('/api/auth/login', {
           code: loginRes.code,
           nickname: nickname || '',
           avatar_url: avatarUrl || '',

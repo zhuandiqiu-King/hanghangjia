@@ -1,13 +1,11 @@
 /**
  * 网络请求封装，自动带 token，401 自动跳登录
  */
-const { getToken } = require('./auth')
-
 const BASE_URL = 'https://flask-h72v-232253-7-1410545899.sh.run.tcloudbase.com'
 
 function request(options) {
   return new Promise((resolve, reject) => {
-    const token = getToken()
+    const token = wx.getStorageSync('token') || ''
     const header = { 'Content-Type': 'application/json', ...options.header }
     if (token) {
       header['Authorization'] = `Bearer ${token}`
@@ -20,7 +18,6 @@ function request(options) {
       header,
       success(res) {
         if (res.statusCode === 401) {
-          // token 失效，跳登录
           wx.removeStorageSync('token')
           wx.redirectTo({ url: '/pages/login/login' })
           reject(new Error('未登录'))
