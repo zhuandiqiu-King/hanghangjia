@@ -162,58 +162,42 @@ async def _call_chat(system_prompt: str, user_message: str) -> str:
 
 
 async def _speech_to_text(audio_url: str) -> str:
-    """调用 Dashscope 语音识别（Paraformer）将音频转文字"""
+    """下载音频文件，用 Dashscope OpenAI 兼容接口同步识别"""
     import httpx
 
-    url = "https://dashscope.aliyuncs.com/api/v1/services/audio/asr/transcription"
-    headers = {
-        "Authorization": f"Bearer {DASHSCOPE_API_KEY}",
-        "Content-Type": "application/json",
-    }
-    payload = {
-        "model": "paraformer-v2",
-        "input": {
-            "file_urls": [audio_url],
-        },
-        "parameters": {
-            "language_hints": ["zh"],
-        },
-    }
-
     async with httpx.AsyncClient(timeout=60) as client:
-        # 提交转写任务
-        resp = await client.post(url, json=payload, headers=headers)
-        data = resp.json()
+        # 1. 下载音频文件
+        try:
+            dl_resp = await client.get(audio_url)
+            dl_resp.raise_for_status()
+            audio_data = dl_resp.content
+        except Exception as e:
+            print(f"下载音频失败: {e}")
+            raise HTTPException(status_code=500, detail="音频文件下载失败")
 
-        task_id = data.get("output", {}).get("task_id")
-        if not task_id:
-            raise HTTPException(status_code=500, detail="语音识别任务提交失败")
+        # 2. 用 multipart 上传到 Dashscope 语音识别（OpenAI 兼容格式）
+        url = "https://dashscope.aliyuncs.com/compatible-mode/v1/audio/transcriptions"
+        headers = {
+            "Authorization": f"Bearer {DASHSCOPE_API_KEY}",
+        }
+        files = {
+            "file": ("audio.mp3", audio_data, "audio/mpeg"),
+        }
+        form_data = {
+            "model": "qwen-audio-asr",
+        }
 
-        # 轮询任务结果
-        check_url = f"https://dashscope.aliyuncs.com/api/v1/tasks/{task_id}"
-        import asyncio
-        for _ in range(30):  # 最多等 30 秒
-            await asyncio.sleep(1)
-            check_resp = await client.get(check_url, headers={"Authorization": f"Bearer {DASHSCOPE_API_KEY}"})
-            check_data = check_resp.json()
-            status = check_data.get("output", {}).get("task_status")
-            if status == "SUCCEEDED":
-                # 提取识别结果
-                results = check_data.get("output", {}).get("results", [])
-                if results:
-                    # 获取转写结果文件
-                    transcript_url = results[0].get("transcription_url")
-                    if transcript_url:
-                        tr_resp = await client.get(transcript_url)
-                        tr_data = tr_resp.json()
-                        transcripts = tr_data.get("transcripts", [])
-                        if transcripts:
-                            return transcripts[0].get("text", "")
-                return ""
-            elif status == "FAILED":
-                raise HTTPException(status_code=500, detail="语音识别失败")
+        try:
+            resp = await client.post(url, headers=headers, files=files, data=form_data)
+            data = resp.json()
+            print(f"语音识别响应: {data}")
 
-    raise HTTPException(status_code=504, detail="语音识别超时")
+            # OpenAI 兼容格式返回 { "text": "识别结果" }
+            text = data.get("text", "")
+            return text.strip()
+        except Exception as e:
+            print(f"语音识别请求失败: {e}")
+            raise HTTPException(status_code=500, detail="语音识别失败")
 
 
 @router.post("/chat/voice", response_model=VoiceChatResponse)
