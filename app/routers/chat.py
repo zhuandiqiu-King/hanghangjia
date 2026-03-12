@@ -162,27 +162,27 @@ async def _call_chat(system_prompt: str, user_message: str) -> str:
 
 
 async def _speech_to_text(audio_url: str) -> str:
-    """用千问 ASR 短音频同步接口识别语音"""
+    """用 qwen2-audio-instruct 模型识别语音（Dashscope 原生接口）"""
     import httpx
 
-    # 使用 OpenAI 兼容格式调用 Dashscope 语音识别
-    url = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
+    url = "https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation"
     headers = {
         "Authorization": f"Bearer {DASHSCOPE_API_KEY}",
         "Content-Type": "application/json",
     }
     payload = {
         "model": "qwen2-audio-instruct",
-        "messages": [
-            {
-                "role": "user",
-                "content": [
-                    {"type": "audio_url", "audio_url": {"url": audio_url}},
-                    {"type": "text", "text": "请将这段语音转录为文字，只输出转录文字内容，不要添加任何解释。"}
-                ]
-            }
-        ],
-        "max_tokens": 500,
+        "input": {
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {"audio": audio_url},
+                        {"text": "请将这段语音转录为文字，只输出转录文字内容。"}
+                    ]
+                }
+            ]
+        },
     }
 
     try:
@@ -191,11 +191,14 @@ async def _speech_to_text(audio_url: str) -> str:
             data = resp.json()
             print(f"语音识别响应: {data}")
 
-            # OpenAI 兼容格式返回
-            choices = data.get("choices", [])
+            # Dashscope 原生格式: output.choices[0].message.content[0].text
+            choices = data.get("output", {}).get("choices", [])
             if choices:
-                text = choices[0].get("message", {}).get("content", "")
-                return text.strip()
+                content = choices[0].get("message", {}).get("content", [])
+                if content and isinstance(content, list):
+                    return content[0].get("text", "").strip()
+                elif isinstance(content, str):
+                    return content.strip()
 
             return ""
     except Exception as e:
