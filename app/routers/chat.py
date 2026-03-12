@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import User
 from app.auth import get_current_user
-from app.schemas import ChatRequest, ChatResponse
+from app.schemas import ChatRequest, ChatResponse, VoiceChatRequest, VoiceChatResponse
 
 router = APIRouter(prefix="/api", tags=["chat"])
 
@@ -130,3 +130,111 @@ async def chat(req: ChatRequest, current_user: User = Depends(get_current_user))
         if isinstance(e, HTTPException):
             raise
         raise HTTPException(status_code=500, detail="AI 服务异常，请稍后再试")
+
+
+async def _call_chat(system_prompt: str, user_message: str) -> str:
+    """调用通义千问大模型获取回复"""
+    import httpx
+
+    url = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {DASHSCOPE_API_KEY}",
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "model": CHAT_MODEL,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_message},
+        ],
+        "max_tokens": 500,
+        "temperature": 0.8,
+    }
+
+    async with httpx.AsyncClient(timeout=30) as client:
+        resp = await client.post(url, json=payload, headers=headers)
+        data = resp.json()
+
+    if "choices" not in data or not data["choices"]:
+        raise HTTPException(status_code=500, detail="AI 回复异常，请稍后再试")
+
+    return data["choices"][0]["message"]["content"]
+
+
+async def _speech_to_text(audio_url: str) -> str:
+    """调用 Dashscope 语音识别（Paraformer）将音频转文字"""
+    import httpx
+
+    url = "https://dashscope.aliyuncs.com/api/v1/services/audio/asr/transcription"
+    headers = {
+        "Authorization": f"Bearer {DASHSCOPE_API_KEY}",
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "model": "paraformer-v2",
+        "input": {
+            "file_urls": [audio_url],
+        },
+        "parameters": {
+            "language_hints": ["zh"],
+        },
+    }
+
+    async with httpx.AsyncClient(timeout=60) as client:
+        # 提交转写任务
+        resp = await client.post(url, json=payload, headers=headers)
+        data = resp.json()
+
+        task_id = data.get("output", {}).get("task_id")
+        if not task_id:
+            raise HTTPException(status_code=500, detail="语音识别任务提交失败")
+
+        # 轮询任务结果
+        check_url = f"https://dashscope.aliyuncs.com/api/v1/tasks/{task_id}"
+        import asyncio
+        for _ in range(30):  # 最多等 30 秒
+            await asyncio.sleep(1)
+            check_resp = await client.get(check_url, headers={"Authorization": f"Bearer {DASHSCOPE_API_KEY}"})
+            check_data = check_resp.json()
+            status = check_data.get("output", {}).get("task_status")
+            if status == "SUCCEEDED":
+                # 提取识别结果
+                results = check_data.get("output", {}).get("results", [])
+                if results:
+                    # 获取转写结果文件
+                    transcript_url = results[0].get("transcription_url")
+                    if transcript_url:
+                        tr_resp = await client.get(transcript_url)
+                        tr_data = tr_resp.json()
+                        transcripts = tr_data.get("transcripts", [])
+                        if transcripts:
+                            return transcripts[0].get("text", "")
+                return ""
+            elif status == "FAILED":
+                raise HTTPException(status_code=500, detail="语音识别失败")
+
+    raise HTTPException(status_code=504, detail="语音识别超时")
+
+
+@router.post("/chat/voice", response_model=VoiceChatResponse)
+async def chat_voice(req: VoiceChatRequest, current_user: User = Depends(get_current_user)):
+    """语音对话：语音识别 → AI 回复"""
+    if not DASHSCOPE_API_KEY:
+        raise HTTPException(status_code=500, detail="AI 服务未配置")
+
+    try:
+        # 1. 语音转文字
+        text = await _speech_to_text(req.audio_url)
+        if not text:
+            return VoiceChatResponse(text="", reply="抱歉，没有听清楚，请再说一次 😊")
+
+        # 2. AI 回复
+        system_prompt = build_system_prompt(current_user)
+        reply = await _call_chat(system_prompt, text)
+        return VoiceChatResponse(text=text, reply=reply)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"语音对话异常: {e}")
+        raise HTTPException(status_code=500, detail="语音处理异常，请稍后再试")

@@ -84,6 +84,15 @@ class ChatResponse(BaseModel):
     reply: str
 
 
+class VoiceChatRequest(BaseModel):
+    audio_url: str = Field(..., examples=["https://xxx.com/voice.mp3"])
+
+
+class VoiceChatResponse(BaseModel):
+    text: str     # 语音识别出的文字
+    reply: str    # AI 回复
+
+
 # --- User profile schemas ---
 
 class UserProfileOut(BaseModel):

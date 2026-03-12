@@ -114,3 +114,23 @@
 .logout-item .item-label {
   color: #e53935;
 }
+
+/* 保存按钮 */
+.save-btn-wrap {
+  padding: 20rpx 28rpx 28rpx;
+}
+
+.save-btn {
+  width: 100%;
+  height: 80rpx;
+  line-height: 80rpx;
+  background: linear-gradient(135deg, #66bb6a, #43a047);
+  color: #fff;
+  font-size: 30rpx;
+  border-radius: 40rpx;
+  border: none;
+}
+
+.save-btn:active {
+  opacity: 0.85;
+}

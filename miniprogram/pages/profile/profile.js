@@ -103,7 +103,6 @@ Page({
     const idx = Number(e.detail.value)
     const style = STYLE_OPTIONS[idx].value
     this.setData({ styleIndex: idx, chatStyle: style })
-    this.savePreferences()
   },
 
   // 角色人设选择
@@ -115,7 +114,6 @@ Page({
       character: char,
       showCustomInput: char === 'custom',
     })
-    this.savePreferences()
   },
 
   // 自定义角色描述
@@ -123,17 +121,15 @@ Page({
     this.setData({ customCharacter: e.detail.value })
   },
 
-  onCustomCharBlur() {
-    this.savePreferences()
-  },
-
   // 称呼方式输入
   onPrefNicknameInput(e) {
     this.setData({ prefNickname: e.detail.value })
   },
 
-  onPrefNicknameBlur() {
-    this.savePreferences()
+  // 点击保存按钮
+  async handleSave() {
+    await this.savePreferences()
+    wx.showToast({ title: '设置已保存', icon: 'success' })
   },
 
   // 保存偏好到后端

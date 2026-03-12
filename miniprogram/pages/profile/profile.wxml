@@ -53,7 +53,6 @@
         placeholder="描述你想要的 AI 角色..."
         value="{{customCharacter}}"
         bindinput="onCustomCharInput"
-        bindblur="onCustomCharBlur"
         maxlength="100"
       />
     </view>
@@ -66,9 +65,13 @@
         placeholder="如：小主人、亲爱的"
         value="{{prefNickname}}"
         bindinput="onPrefNicknameInput"
-        bindblur="onPrefNicknameBlur"
         maxlength="20"
       />
+    </view>
+
+    <!-- 保存按钮 -->
+    <view class="save-btn-wrap">
+      <button class="save-btn" bindtap="handleSave">💾 保存设置</button>
     </view>
   </view>
 

@@ -42,23 +42,42 @@
     <view class="scroll-bottom"></view>
   </scroll-view>
 
-  <!-- 底部输入框 -->
+  <!-- 底部输入栏 -->
   <view class="input-bar">
-    <input
-      class="msg-input"
-      placeholder="输入消息..."
-      value="{{inputValue}}"
-      bindinput="onInput"
-      confirm-type="send"
-      bindconfirm="handleSend"
-      disabled="{{loading}}"
-    />
-    <button
-      class="send-btn {{inputValue.trim() && !loading ? 'send-active' : ''}}"
-      bindtap="handleSend"
-      disabled="{{!inputValue.trim() || loading}}"
+    <!-- 语音/键盘切换按钮 -->
+    <view class="voice-toggle" bindtap="toggleVoice">
+      <text>{{voiceMode ? '⌨️' : '🎤'}}</text>
+    </view>
+
+    <!-- 文字输入模式 -->
+    <block wx:if="{{!voiceMode}}">
+      <input
+        class="msg-input"
+        placeholder="输入消息..."
+        value="{{inputValue}}"
+        bindinput="onInput"
+        confirm-type="send"
+        bindconfirm="handleSend"
+        disabled="{{loading}}"
+      />
+      <button
+        class="send-btn {{inputValue.trim() && !loading ? 'send-active' : ''}}"
+        bindtap="handleSend"
+        disabled="{{!inputValue.trim() || loading}}"
+      >
+        发送
+      </button>
+    </block>
+
+    <!-- 语音输入模式 -->
+    <view
+      wx:else
+      class="voice-btn {{recording ? 'voice-btn-active' : ''}}"
+      bindtouchstart="startRecord"
+      bindtouchend="stopRecord"
+      bindtouchcancel="stopRecord"
     >
-      发送
-    </button>
+      <text>{{recording ? '🔴 松开结束' : '🎤 按住说话'}}</text>
+    </view>
   </view>
 </view>
