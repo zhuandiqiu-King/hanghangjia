@@ -18,8 +18,8 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 @router.post("/login", response_model=LoginResponse)
 async def login(req: WxLoginRequest, db: Session = Depends(get_db)):
     """微信登录：code → openid → 查/创建用户 → 返回 JWT"""
-    # 开发模式：跳过微信验证，用 code 作为 openid
-    if os.getenv("DEV_MODE") == "1":
+    # WX_APPID/WX_SECRET 未配置时自动进入开发模式
+    if not os.getenv("WX_APPID") or not os.getenv("WX_SECRET"):
         openid = f"dev_{req.code}"
     else:
         openid = await wx_code2session(req.code)
