@@ -1,0 +1,80 @@
+.tools-page {
+  min-height: 100vh;
+  background: #f0f5f0;
+  padding: 0 24rpx 40rpx;
+}
+
+.page-header {
+  padding: 40rpx 0 30rpx;
+  text-align: center;
+}
+
+.header-title {
+  display: block;
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.header-desc {
+  display: block;
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 8rpx;
+}
+
+/* 工具网格 */
+.tools-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24rpx;
+}
+
+.tool-card {
+  width: calc(50% - 12rpx);
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 36rpx 24rpx;
+  text-align: center;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+  position: relative;
+  transition: transform 0.2s;
+}
+
+.tool-card:active {
+  transform: scale(0.96);
+}
+
+.tool-disabled {
+  opacity: 0.6;
+}
+
+.tool-icon {
+  font-size: 64rpx;
+  margin-bottom: 16rpx;
+}
+
+.tool-name {
+  display: block;
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.tool-desc {
+  display: block;
+  font-size: 22rpx;
+  color: #999;
+}
+
+.coming-badge {
+  position: absolute;
+  top: 16rpx;
+  right: 16rpx;
+  font-size: 18rpx;
+  color: #ff9800;
+  background: #fff3e0;
+  padding: 4rpx 12rpx;
+  border-radius: 10rpx;
+}

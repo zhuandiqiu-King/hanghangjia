@@ -9,7 +9,7 @@ Page({
     // 已登录直接跳首页
     const token = wx.getStorageSync('token')
     if (token) {
-      wx.redirectTo({ url: '/pages/index/index' })
+      wx.switchTab({ url: '/pages/home/home' })
     }
   },
 
@@ -21,7 +21,7 @@ Page({
     login('', '')
       .then((data) => {
         console.log('登录成功', data)
-        wx.redirectTo({ url: '/pages/index/index' })
+        wx.switchTab({ url: '/pages/home/home' })
       })
       .catch((err) => {
         console.error('登录失败详情:', err.message || err)

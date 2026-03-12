@@ -15,6 +15,7 @@ class User(Base):
     openid: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
     nickname: Mapped[str] = mapped_column(String(100), default="")
     avatar_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    preferences: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # JSON: AI 对话偏好
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 
     # 用户拥有的植物

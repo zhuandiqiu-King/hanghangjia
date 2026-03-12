@@ -1,0 +1,21 @@
+<view class="tools-page">
+  <view class="page-header">
+    <text class="header-title">🧰 工具箱</text>
+    <text class="header-desc">实用家庭生活工具</text>
+  </view>
+
+  <view class="tools-grid">
+    <view
+      wx:for="{{tools}}"
+      wx:key="id"
+      class="tool-card {{item.active ? '' : 'tool-disabled'}}"
+      bindtap="handleTap"
+      data-id="{{item.id}}"
+    >
+      <view class="tool-icon">{{item.icon}}</view>
+      <text class="tool-name">{{item.name}}</text>
+      <text class="tool-desc">{{item.desc}}</text>
+      <view wx:if="{{!item.active}}" class="coming-badge">即将上线</view>
+    </view>
+  </view>
+</view>

@@ -72,3 +72,30 @@ class UserOut(BaseModel):
 class LoginResponse(BaseModel):
     token: str
     user: UserOut
+
+
+# --- Chat schemas ---
+
+class ChatRequest(BaseModel):
+    message: str = Field(..., min_length=1, max_length=1000, examples=["绿萝叶子发黄怎么办？"])
+
+
+class ChatResponse(BaseModel):
+    reply: str
+
+
+# --- User profile schemas ---
+
+class UserProfileOut(BaseModel):
+    id: int
+    nickname: str
+    avatar_url: Optional[str]
+    preferences: dict = {}
+
+    model_config = {"from_attributes": True}
+
+
+class UserProfileUpdate(BaseModel):
+    nickname: Optional[str] = Field(None, max_length=100)
+    avatar_url: Optional[str] = None
+    preferences: Optional[dict] = None

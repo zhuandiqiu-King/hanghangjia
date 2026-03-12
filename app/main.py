@@ -6,16 +6,20 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy import inspect, text
 
 from app.database import engine, Base
-from app.routers import plants, watering, auth
+from app.routers import plants, watering, auth, chat, user
 
 # 创建数据库表
 Base.metadata.create_all(bind=engine)
 
 # 自动迁移：为已有表补充新字段
 with engine.connect() as conn:
-    columns = [col["name"] for col in inspect(engine).get_columns("plants")]
-    if "photo_url" not in columns:
+    plant_cols = [col["name"] for col in inspect(engine).get_columns("plants")]
+    if "photo_url" not in plant_cols:
         conn.execute(text("ALTER TABLE plants ADD COLUMN photo_url TEXT"))
+        conn.commit()
+    user_cols = [col["name"] for col in inspect(engine).get_columns("users")]
+    if "preferences" not in user_cols:
+        conn.execute(text("ALTER TABLE users ADD COLUMN preferences TEXT"))
         conn.commit()
 
 app = FastAPI(title="Plant Sprite", description="植物浇水提醒服务", version="1.0.0")
@@ -23,6 +27,8 @@ app = FastAPI(title="Plant Sprite", description="植物浇水提醒服务", vers
 app.include_router(auth.router)
 app.include_router(plants.router)
 app.include_router(watering.router)
+app.include_router(chat.router)
+app.include_router(user.router)
 
 # 静态文件目录
 STATIC_DIR = Path(__file__).parent / "static"

@@ -1,0 +1,94 @@
+<view class="profile-page">
+  <!-- 头像区域 -->
+  <view class="user-header">
+    <view class="avatar-wrap">
+      <image wx:if="{{avatarUrl}}" class="user-avatar" src="{{avatarUrl}}" mode="aspectFill" />
+      <view wx:else class="avatar-placeholder">😊</view>
+    </view>
+    <text class="user-name">{{nickname || '未设置昵称'}}</text>
+  </view>
+
+  <!-- AI 对话偏好 -->
+  <view class="section">
+    <view class="section-title">🎨 AI 对话偏好</view>
+
+    <!-- 对话风格 -->
+    <picker
+      mode="selector"
+      range="{{styleOptions}}"
+      range-key="label"
+      value="{{styleIndex}}"
+      bindchange="onStyleChange"
+    >
+      <view class="setting-item">
+        <text class="item-label">🎭 对话风格</text>
+        <view class="item-value">
+          <text>{{styleOptions[styleIndex].label}}</text>
+          <text class="arrow">›</text>
+        </view>
+      </view>
+    </picker>
+
+    <!-- 角色人设 -->
+    <picker
+      mode="selector"
+      range="{{characterOptions}}"
+      range-key="label"
+      value="{{characterIndex}}"
+      bindchange="onCharacterChange"
+    >
+      <view class="setting-item">
+        <text class="item-label">🌟 角色人设</text>
+        <view class="item-value">
+          <text>{{characterOptions[characterIndex].label}}</text>
+          <text class="arrow">›</text>
+        </view>
+      </view>
+    </picker>
+
+    <!-- 自定义角色描述 -->
+    <view wx:if="{{showCustomInput}}" class="custom-input-wrap">
+      <input
+        class="custom-input"
+        placeholder="描述你想要的 AI 角色..."
+        value="{{customCharacter}}"
+        bindinput="onCustomCharInput"
+        bindblur="onCustomCharBlur"
+        maxlength="100"
+      />
+    </view>
+
+    <!-- 称呼方式 -->
+    <view class="setting-item">
+      <text class="item-label">💌 称呼方式</text>
+      <input
+        class="nickname-input"
+        placeholder="如：小主人、亲爱的"
+        value="{{prefNickname}}"
+        bindinput="onPrefNicknameInput"
+        bindblur="onPrefNicknameBlur"
+        maxlength="20"
+      />
+    </view>
+  </view>
+
+  <!-- 账号管理 -->
+  <view class="section">
+    <view class="section-title">⚙️ 账号管理</view>
+
+    <view class="setting-item" bindtap="handleEditNickname">
+      <text class="item-label">📝 修改昵称</text>
+      <text class="arrow">›</text>
+    </view>
+
+    <view class="setting-item" bindtap="handleAbout">
+      <text class="item-label">📋 关于我们</text>
+      <text class="arrow">›</text>
+    </view>
+
+    <view class="setting-item logout-item" bindtap="handleLogout">
+      <text class="item-label">🚪 退出登录</text>
+      <text class="arrow">›</text>
+    </view>
+  </view>
+</view>
