@@ -11,7 +11,7 @@ function request(options) {
       header['Authorization'] = `Bearer ${token}`
     }
 
-    wx.cloud.callContainer({
+    const params = {
       config: {
         env: 'prod-0g02is9d648082af',
       },
@@ -38,7 +38,14 @@ function request(options) {
         console.error('callContainer fail', err)
         reject(err)
       },
-    })
+    }
+
+    // 支持自定义超时（毫秒）
+    if (options.timeout) {
+      params.timeout = options.timeout
+    }
+
+    wx.cloud.callContainer(params)
   })
 }
 

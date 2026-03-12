@@ -102,8 +102,13 @@ Page({
       })
       const audioUrl = urlRes.fileList[0].tempFileURL
 
-      // 调用后端语音识别 + AI 回复
-      const data = await api.post('/api/chat/voice', { audio_url: audioUrl })
+      // 调用后端语音识别 + AI 回复（超时 60 秒）
+      const data = await api.request({
+        url: '/api/chat/voice',
+        method: 'POST',
+        data: { audio_url: audioUrl },
+        timeout: 60000,
+      })
 
       // 添加用户消息（识别出的文字）
       const userMsg = { role: 'user', content: data.text || '🎤 语音消息' }
@@ -142,7 +147,12 @@ Page({
     })
 
     try {
-      const data = await api.post('/api/chat', { message: msg })
+      const data = await api.request({
+        url: '/api/chat',
+        method: 'POST',
+        data: { message: msg },
+        timeout: 30000,
+      })
       const updated = [...this.data.messages, { role: 'ai', content: data.reply }]
       this.setData({
         messages: updated,
