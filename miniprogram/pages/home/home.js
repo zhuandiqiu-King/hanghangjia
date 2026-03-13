@@ -4,12 +4,13 @@ const recorderManager = wx.getRecorderManager()
 
 Page({
   data: {
-    messages: [],     // { role: 'user'|'ai', content: string }
+    messages: [],
     inputValue: '',
-    loading: false,   // AI 回复中
-    scrollId: '',     // 滚动锚点
-    voiceMode: false, // 语音模式
-    recording: false, // 录音中
+    loading: false,
+    scrollId: '',
+    voiceMode: false,
+    recording: false,
+    hasRecordAuth: false,
   },
 
   onLoad() {
@@ -36,7 +37,6 @@ Page({
       wx.redirectTo({ url: '/pages/login/login' })
       return
     }
-    // 首次进入显示欢迎语
     if (!this.data.messages.length) {
       this.setData({
         messages: [{
@@ -51,17 +51,82 @@ Page({
     this.setData({ inputValue: e.detail.value })
   },
 
-  // 切换语音/文字模式
+  // 切换语音/文字模式 — 进入语音模式时先检查权限
   toggleVoice() {
-    this.setData({ voiceMode: !this.data.voiceMode })
+    const entering = !this.data.voiceMode
+    if (entering) {
+      this._checkRecordAuth().then((authorized) => {
+        if (authorized) {
+          this.setData({ voiceMode: true, hasRecordAuth: true })
+        }
+      })
+    } else {
+      this.setData({ voiceMode: false })
+    }
+  },
+
+  // 检查录音权限
+  _checkRecordAuth() {
+    return new Promise((resolve) => {
+      wx.getSetting({
+        success: (res) => {
+          if (res.authSetting['scope.record']) {
+            resolve(true)
+          } else if (res.authSetting['scope.record'] === false) {
+            // 被拒绝过，引导去设置页开启
+            wx.showModal({
+              title: '需要录音权限',
+              content: '请在设置中开启录音权限，才能使用语音功能',
+              confirmText: '去设置',
+              success: (modalRes) => {
+                if (modalRes.confirm) {
+                  wx.openSetting({
+                    success: (settingRes) => {
+                      resolve(!!settingRes.authSetting['scope.record'])
+                    },
+                    fail: () => resolve(false),
+                  })
+                } else {
+                  resolve(false)
+                }
+              },
+            })
+          } else {
+            // 未请求过，主动发起授权
+            wx.authorize({
+              scope: 'scope.record',
+              success: () => resolve(true),
+              fail: () => {
+                wx.showToast({ title: '需要录音权限才能使用语音', icon: 'none' })
+                resolve(false)
+              },
+            })
+          }
+        },
+        fail: () => resolve(false),
+      })
+    })
   },
 
   // 长按开始录音
   startRecord() {
-    if (this.data.loading) return
+    if (this.data.loading || this.data.recording) return
+    if (!this.data.hasRecordAuth) {
+      this._checkRecordAuth().then((ok) => {
+        if (ok) {
+          this.setData({ hasRecordAuth: true })
+          this._doStartRecord()
+        }
+      })
+      return
+    }
+    this._doStartRecord()
+  },
+
+  _doStartRecord() {
     this.setData({ recording: true })
     recorderManager.start({
-      duration: 60000,  // 最长 60 秒
+      duration: 60000,
       sampleRate: 16000,
       numberOfChannels: 1,
       encodeBitRate: 48000,
@@ -81,7 +146,6 @@ Page({
     this.setData({ loading: true })
 
     try {
-      // 上传到云存储
       const cloudPath = `voice/${Date.now()}-${Math.random().toString(36).slice(2)}.mp3`
       const uploadRes = await new Promise((resolve, reject) => {
         wx.cloud.uploadFile({
@@ -92,7 +156,6 @@ Page({
         })
       })
 
-      // 获取可访问 URL
       const urlRes = await new Promise((resolve, reject) => {
         wx.cloud.getTempFileURL({
           fileList: [uploadRes.fileID],
@@ -102,7 +165,6 @@ Page({
       })
       const audioUrl = urlRes.fileList[0].tempFileURL
 
-      // 调用后端语音识别 + AI 回复（超时 60 秒）
       const data = await api.request({
         url: '/api/chat/voice',
         method: 'POST',
@@ -110,7 +172,6 @@ Page({
         timeout: 60000,
       })
 
-      // 添加用户消息（识别出的文字）
       const userMsg = { role: 'user', content: data.text || '🎤 语音消息' }
       const aiMsg = { role: 'ai', content: data.reply }
       const updated = [...this.data.messages, userMsg, aiMsg]

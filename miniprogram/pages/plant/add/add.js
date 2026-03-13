@@ -1,4 +1,4 @@
-const api = require('../../utils/api')
+const api = require('../../../utils/api')
 
 // 可爱后缀列表
 const CUTE_SUFFIXES = [
