@@ -2,7 +2,8 @@
   <!-- 顶部问候 -->
   <view class="greeting-area">
     <text class="greeting-text">Hello 🌿</text>
-    <text class="greeting-sub">照顾好你的植物朋友们</text>
+    <text class="greeting-sub" wx:if="{{familyName}}">{{familyName}}</text>
+    <text class="greeting-sub" wx:else>照顾好你的植物朋友们</text>
   </view>
 
   <!-- 浇水清单 -->

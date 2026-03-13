@@ -41,6 +41,8 @@ Page({
     // 浇水提醒
     reminderEnabled: false,
     reminderTime: '06:30',
+    // 家庭
+    currentFamilyName: '',
     // 状态
     showCustomInput: false,
     loading: true,
@@ -53,6 +55,27 @@ Page({
       return
     }
     this.loadProfile()
+    this.loadFamilyInfo()
+  },
+
+  async loadFamilyInfo() {
+    try {
+      const families = await api.get('/api/family')
+      const app = getApp()
+      // 找当前家庭
+      const current = families.find((f) => f.id === app.globalData.currentFamilyId) || families[0]
+      if (current) {
+        app.globalData.currentFamilyId = current.id
+        app.globalData.currentFamilyName = current.name
+        this.setData({ currentFamilyName: current.name })
+      }
+    } catch (err) {
+      console.error('加载家庭信息失败', err)
+    }
+  },
+
+  goFamily() {
+    wx.navigateTo({ url: '/pages/family/index/index' })
   },
 
   async loadProfile() {

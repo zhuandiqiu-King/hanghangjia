@@ -1,0 +1,41 @@
+<view class="family-page">
+  <!-- 家庭列表 -->
+  <view class="family-list" wx:if="{{!loading}}">
+    <view
+      class="family-card {{item.id === currentFamilyId ? 'active' : ''}}"
+      wx:for="{{families}}"
+      wx:key="id"
+    >
+      <view class="card-main" bindtap="goDetail" data-id="{{item.id}}">
+        <view class="family-icon">{{item.is_personal ? '👤' : '🏠'}}</view>
+        <view class="family-info">
+          <text class="family-name">{{item.name}}</text>
+          <view class="family-meta">
+            <text class="role-badge {{item.my_role === 'admin' ? 'badge-admin' : 'badge-member'}}">
+              {{item.my_role === 'admin' ? '管理员' : '成员'}}
+            </text>
+            <text class="member-count">{{item.member_count}}人</text>
+          </view>
+        </view>
+        <text class="arrow">›</text>
+      </view>
+      <view class="card-action" wx:if="{{item.id !== currentFamilyId}}">
+        <view class="switch-btn" bindtap="handleSwitch" data-id="{{item.id}}">切换到此家庭</view>
+      </view>
+      <view class="card-action" wx:else>
+        <view class="current-tag">当前家庭</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty" wx:if="{{!loading && !families.length}}">
+    <text class="empty-icon">🏠</text>
+    <text class="empty-text">还没有家庭，创建一个吧</text>
+  </view>
+
+  <!-- 创建按钮 -->
+  <view class="create-wrap">
+    <view class="create-btn" bindtap="handleCreate">+ 创建新家庭</view>
+  </view>
+</view>

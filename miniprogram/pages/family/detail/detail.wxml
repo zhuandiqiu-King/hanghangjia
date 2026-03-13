@@ -1,0 +1,48 @@
+<view class="detail-page" wx:if="{{!loading && family}}">
+  <!-- 家庭信息卡 -->
+  <view class="family-header">
+    <view class="family-icon-lg">{{family.is_personal ? '👤' : '🏠'}}</view>
+    <text class="family-name-lg">{{family.name}}</text>
+    <text class="family-count">{{family.member_count}} 位成员</text>
+    <view class="rename-btn" wx:if="{{isAdmin && !family.is_personal}}" bindtap="handleRename">
+      ✏️ 修改名称
+    </view>
+  </view>
+
+  <!-- 成员列表 -->
+  <view class="section">
+    <view class="section-title">👨‍👩‍👧‍👦 家庭成员</view>
+    <view class="member-item" wx:for="{{members}}" wx:key="id">
+      <image wx:if="{{item.realAvatar}}" class="member-avatar" src="{{item.avatar_url}}" mode="aspectFill" />
+      <view wx:else class="member-avatar-emoji">{{item.emoji}}</view>
+      <view class="member-info">
+        <text class="member-name">{{item.nickname || '未设置'}}</text>
+        <text class="role-tag {{item.role === 'admin' ? 'tag-admin' : 'tag-member'}}">
+          {{item.role === 'admin' ? '管理员' : '成员'}}
+        </text>
+      </view>
+      <!-- admin 操作按钮 -->
+      <view class="member-actions" wx:if="{{isAdmin && item.role !== 'admin'}}">
+        <text class="action-transfer" bindtap="handleTransfer" data-uid="{{item.user_id}}" data-name="{{item.nickname}}">转让</text>
+        <text class="action-remove" bindtap="handleRemove" data-uid="{{item.user_id}}" data-name="{{item.nickname}}">移除</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 操作区 -->
+  <view class="action-section" wx:if="{{!family.is_personal}}">
+    <!-- 管理员操作 -->
+    <view wx:if="{{isAdmin}}">
+      <view class="action-btn invite-btn" bindtap="handleInvite">📨 邀请家人加入</view>
+      <view class="action-btn danger-btn" bindtap="handleDissolve">解散家庭</view>
+    </view>
+    <!-- 成员操作 -->
+    <view wx:else>
+      <view class="action-btn leave-btn" bindtap="handleLeave">退出家庭</view>
+    </view>
+  </view>
+
+  <view class="personal-note" wx:if="{{family.is_personal}}">
+    <text>个人空间是你的私有植物空间，无法邀请他人或解散。</text>
+  </view>
+</view>

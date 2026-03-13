@@ -9,17 +9,32 @@ from app.models import Plant, WateringRecord
 from app.schemas import PlantCreate, PlantUpdate
 
 
-def check_plant_name(db: Session, name: str, user_id: int | None = None, exclude_id: int | None = None) -> bool:
-    """检查当前用户是否已有同名植物，返回 True 表示名称已存在"""
+def check_plant_name(
+    db: Session,
+    name: str,
+    family_id: int | None = None,
+    user_id: int | None = None,
+    exclude_id: int | None = None,
+) -> bool:
+    """检查当前家庭是否已有同名植物，返回 True 表示名称已存在"""
     stmt = select(Plant).where(Plant.name == name)
-    if user_id is not None:
+    if family_id is not None:
+        stmt = stmt.where(Plant.family_id == family_id)
+    elif user_id is not None:
+        # 向后兼容
         stmt = stmt.where(Plant.user_id == user_id)
     if exclude_id is not None:
         stmt = stmt.where(Plant.id != exclude_id)
     return db.scalars(stmt).first() is not None
 
 
-def create_plant(db: Session, data: PlantCreate, user_id: int | None = None) -> Plant:
+def create_plant(
+    db: Session,
+    data: PlantCreate,
+    user_id: int | None = None,
+    family_id: int | None = None,
+    created_by: int | None = None,
+) -> Plant:
     """添加植物，next_watering_date = 今天 + interval"""
     plant = Plant(
         name=data.name,
@@ -29,6 +44,8 @@ def create_plant(db: Session, data: PlantCreate, user_id: int | None = None) -> 
         photo_url=data.photo_url,
         next_watering_date=date.today() + timedelta(days=data.watering_interval),
         user_id=user_id,
+        family_id=family_id,
+        created_by=created_by,
     )
     db.add(plant)
     db.commit()
@@ -36,18 +53,33 @@ def create_plant(db: Session, data: PlantCreate, user_id: int | None = None) -> 
     return plant
 
 
-def get_plants(db: Session, user_id: int | None = None) -> List[Plant]:
-    """获取植物列表，按 user_id 过滤"""
+def get_plants(
+    db: Session,
+    user_id: int | None = None,
+    family_id: int | None = None,
+) -> List[Plant]:
+    """获取植物列表，按 family_id 或 user_id 过滤"""
     stmt = select(Plant).order_by(Plant.next_watering_date)
-    if user_id is not None:
+    if family_id is not None:
+        stmt = stmt.where(Plant.family_id == family_id)
+    elif user_id is not None:
         stmt = stmt.where(Plant.user_id == user_id)
     return list(db.scalars(stmt).all())
 
 
-def get_plant(db: Session, plant_id: int, user_id: int | None = None) -> Optional[Plant]:
+def get_plant(
+    db: Session,
+    plant_id: int,
+    user_id: int | None = None,
+    family_id: int | None = None,
+) -> Optional[Plant]:
     """获取单个植物，验证归属"""
     plant = db.get(Plant, plant_id)
-    if plant and user_id is not None and plant.user_id != user_id:
+    if not plant:
+        return None
+    if family_id is not None and plant.family_id != family_id:
+        return None
+    if user_id is not None and family_id is None and plant.user_id != user_id:
         return None
     return plant
 
@@ -76,22 +108,39 @@ def delete_plant(db: Session, plant: Plant) -> None:
     db.commit()
 
 
-def water_plant(db: Session, plant: Plant) -> WateringRecord:
+def water_plant(
+    db: Session,
+    plant: Plant,
+    operator_id: int | None = None,
+) -> WateringRecord:
     """浇水打卡：更新 next_watering_date 并记录"""
     plant.next_watering_date = date.today() + timedelta(days=plant.watering_interval)
-    record = WateringRecord(plant_id=plant.id, watered_at=datetime.now())
+    record = WateringRecord(
+        plant_id=plant.id,
+        operator_id=operator_id,
+        watered_at=datetime.now(),
+    )
     db.add(record)
     db.commit()
     db.refresh(record)
     return record
 
 
-def get_reminders(db: Session, user_id: int | None = None) -> List[Plant]:
+def get_reminders(
+    db: Session,
+    user_id: int | None = None,
+    family_id: int | None = None,
+    family_ids: list[int] | None = None,
+) -> List[Plant]:
     """获取今天及逾期需要浇水的植物"""
     stmt = select(Plant).where(Plant.next_watering_date <= date.today()).order_by(
         Plant.next_watering_date
     )
-    if user_id is not None:
+    if family_ids is not None:
+        stmt = stmt.where(Plant.family_id.in_(family_ids))
+    elif family_id is not None:
+        stmt = stmt.where(Plant.family_id == family_id)
+    elif user_id is not None:
         stmt = stmt.where(Plant.user_id == user_id)
     return list(db.scalars(stmt).all())
 

@@ -1,0 +1,23 @@
+<view class="join-page">
+  <!-- 加载中 -->
+  <view class="status-card" wx:if="{{status === 'loading'}}">
+    <text class="status-icon">⏳</text>
+    <text class="status-text">正在加入家庭...</text>
+  </view>
+
+  <!-- 成功 -->
+  <view class="status-card" wx:if="{{status === 'success'}}">
+    <text class="status-icon">🎉</text>
+    <text class="status-title">加入成功！</text>
+    <text class="status-text">你已成功加入「{{familyName}}」</text>
+    <view class="go-btn" bindtap="goHome">进入首页</view>
+  </view>
+
+  <!-- 失败 -->
+  <view class="status-card" wx:if="{{status === 'error'}}">
+    <text class="status-icon">😔</text>
+    <text class="status-title">加入失败</text>
+    <text class="status-text">{{errorMsg}}</text>
+    <view class="go-btn" bindtap="goHome">返回首页</view>
+  </view>
+</view>

@@ -110,3 +110,48 @@ class UserProfileUpdate(BaseModel):
     nickname: Optional[str] = Field(None, max_length=100)
     avatar_url: Optional[str] = None
     preferences: Optional[dict] = None
+
+
+# --- Family schemas ---
+
+class FamilyCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=100, examples=["我的小家"])
+
+
+class FamilyOut(BaseModel):
+    id: int
+    name: str
+    is_personal: bool = False
+    created_at: datetime
+    member_count: int = 0
+    my_role: str = "member"  # 当前用户在此家庭的角色
+
+
+class FamilyMemberOut(BaseModel):
+    id: int
+    user_id: int
+    nickname: str = ""
+    avatar_url: Optional[str] = None
+    role: str = "member"
+    joined_at: datetime
+
+
+class FamilyDetailOut(FamilyOut):
+    members: List[FamilyMemberOut] = []
+
+
+class InviteOut(BaseModel):
+    invite_code: str
+    expires_at: datetime
+
+
+class JoinFamilyRequest(BaseModel):
+    invite_code: str = Field(..., min_length=1, max_length=32)
+
+
+class SwitchFamilyRequest(BaseModel):
+    family_id: int
+
+
+class TransferAdminRequest(BaseModel):
+    target_user_id: int

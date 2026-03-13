@@ -126,6 +126,7 @@
 .icon-about { background: #F3E8FD; }
 .icon-reminder { background: #E0F7FA; }
 .icon-time { background: #FFF3E0; }
+.icon-family { background: #E8F0FE; }
 
 .item-label {
   font-size: 28rpx;

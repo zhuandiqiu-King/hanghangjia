@@ -5,7 +5,8 @@ Page({
     reminders: [],
     plants: [],
     loading: true,
-    watering: false, // 批量浇水中
+    watering: false,
+    familyName: '',
   },
 
   onShow() {
@@ -14,6 +15,8 @@ Page({
       wx.redirectTo({ url: '/pages/login/login' })
       return
     }
+    const app = getApp()
+    this.setData({ familyName: app.globalData.currentFamilyName || '' })
     this.loadData()
   },
 

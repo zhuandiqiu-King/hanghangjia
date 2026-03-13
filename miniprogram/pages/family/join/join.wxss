@@ -1,0 +1,54 @@
+.join-page {
+  min-height: 100vh;
+  background: #F5F0EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx;
+}
+
+.status-card {
+  background: #fff;
+  border-radius: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.06);
+  padding: 80rpx 48rpx;
+  text-align: center;
+  width: 100%;
+  max-width: 600rpx;
+}
+
+.status-icon {
+  font-size: 80rpx;
+  display: block;
+  margin-bottom: 24rpx;
+}
+
+.status-title {
+  display: block;
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #2C3E50;
+  margin-bottom: 16rpx;
+}
+
+.status-text {
+  display: block;
+  font-size: 28rpx;
+  color: #95A5A6;
+  margin-bottom: 40rpx;
+}
+
+.go-btn {
+  height: 84rpx;
+  line-height: 84rpx;
+  background: #fff;
+  color: #2C3E50;
+  font-size: 30rpx;
+  font-weight: 500;
+  border-radius: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.06);
+}
+
+.go-btn:active {
+  opacity: 0.85;
+}

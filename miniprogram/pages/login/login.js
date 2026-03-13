@@ -19,6 +19,9 @@ Page({
     login('', '')
       .then((data) => {
         console.log('登录成功', data)
+        // 加载家庭信息
+        const app = getApp()
+        app.loadCurrentFamily()
         // 新用户且未完成过引导 → 跳引导页
         const onboardingDone = wx.getStorageSync('onboarding_done')
         if (data.is_new_user && !onboardingDone) {

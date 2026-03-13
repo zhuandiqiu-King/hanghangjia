@@ -82,6 +82,19 @@
     </view>
   </view>
 
+  <!-- 家庭管理 -->
+  <view class="section">
+    <view class="section-title">🏠 家庭管理</view>
+    <view class="setting-item" bindtap="goFamily">
+      <view class="item-icon icon-family">👨‍👩‍👧</view>
+      <text class="item-label">我的家庭</text>
+      <view class="item-value">
+        <text>{{currentFamilyName || '个人空间'}}</text>
+        <text class="arrow">›</text>
+      </view>
+    </view>
+  </view>
+
   <!-- 账号管理 -->
   <view class="section">
     <view class="section-title">⚙️ 账号管理</view>
