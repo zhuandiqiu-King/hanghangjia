@@ -188,25 +188,24 @@
   height: 72rpx;
 }
 
-/* 按钮 */
+/* 按钮 — 白色卡片风格，与全局设计一致 */
 .save-btn {
   width: 100%;
-  height: 92rpx;
-  line-height: 92rpx;
-  background: linear-gradient(135deg, #2ECC71, #27AE60);
-  color: #fff;
-  font-size: 32rpx;
+  height: 88rpx;
+  line-height: 88rpx;
+  background: #fff;
+  color: #2C3E50;
+  font-size: 30rpx;
   font-weight: 500;
-  border-radius: 48rpx;
+  border-radius: 24rpx;
   border: none;
-  box-shadow: 0 8rpx 24rpx rgba(46, 204, 113, 0.35);
-  letter-spacing: 4rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.06);
   margin-top: 16rpx;
 }
 
 .save-btn:active {
-  opacity: 0.9;
-  transform: scale(0.98);
+  opacity: 0.85;
+  transform: scale(0.96);
 }
 
 .skip-btn {

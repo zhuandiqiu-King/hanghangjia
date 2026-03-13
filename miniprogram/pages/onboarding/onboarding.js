@@ -136,6 +136,7 @@ Page({
         payload.avatar_url = this.data.avatarUrl
       }
       await api.put('/api/user/profile', payload)
+      wx.setStorageSync('onboarding_done', true)
       wx.showToast({ title: '设置成功', icon: 'success' })
       setTimeout(() => {
         wx.switchTab({ url: '/pages/home/home' })
@@ -150,6 +151,7 @@ Page({
 
   // 跳过 — 使用默认值直接进首页
   handleSkip() {
+    wx.setStorageSync('onboarding_done', true)
     wx.switchTab({ url: '/pages/home/home' })
   },
 })

@@ -19,8 +19,9 @@ Page({
     login('', '')
       .then((data) => {
         console.log('登录成功', data)
-        // 仅新用户跳引导页，老用户直接进首页
-        if (data.is_new_user) {
+        // 新用户且未完成过引导 → 跳引导页
+        const onboardingDone = wx.getStorageSync('onboarding_done')
+        if (data.is_new_user && !onboardingDone) {
           wx.redirectTo({
             url: '/pages/onboarding/onboarding',
             fail: () => wx.switchTab({ url: '/pages/home/home' }),

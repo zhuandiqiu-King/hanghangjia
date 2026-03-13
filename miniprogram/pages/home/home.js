@@ -58,6 +58,43 @@ Page({
         }],
       })
     }
+    // 每日浇水任务卡片
+    this._checkWateringCard()
+  },
+
+  /** 检查并插入每日浇水任务卡片 */
+  _checkWateringCard() {
+    const today = new Date().toISOString().slice(0, 10)
+    const lastDate = wx.getStorageSync('last_watering_card_date')
+    if (lastDate === today) return // 今天已插入过
+
+    api.get('/api/reminders')
+      .then((data) => {
+        const plants = data.plants || data || []
+        if (!plants.length) return
+        const names = plants.map((p) => p.name || p.nickname || '未命名')
+        const cardMsg = {
+          role: 'ai',
+          type: 'watering_card',
+          count: plants.length,
+          names: names.slice(0, 5), // 最多展示 5 棵
+          totalCount: plants.length,
+        }
+        const messages = [...this.data.messages, cardMsg]
+        this.setData({
+          messages,
+          scrollId: `msg-${messages.length - 1}`,
+        })
+        wx.setStorageSync('last_watering_card_date', today)
+      })
+      .catch((err) => {
+        console.error('获取待浇水植物失败', err)
+      })
+  },
+
+  /** 点击浇水卡片跳转 */
+  goToWatering() {
+    wx.navigateTo({ url: '/pages/plant/watering/watering' })
   },
 
   onInput(e) {

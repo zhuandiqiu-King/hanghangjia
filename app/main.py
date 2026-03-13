@@ -7,6 +7,7 @@ from sqlalchemy import inspect, text
 
 from app.database import engine, Base
 from app.routers import plants, watering, auth, chat, user
+from app.scheduler import start_scheduler, stop_scheduler
 
 # 创建数据库表
 Base.metadata.create_all(bind=engine)
@@ -29,6 +30,17 @@ app.include_router(plants.router)
 app.include_router(watering.router)
 app.include_router(chat.router)
 app.include_router(user.router)
+
+
+@app.on_event("startup")
+def on_startup():
+    start_scheduler()
+
+
+@app.on_event("shutdown")
+def on_shutdown():
+    stop_scheduler()
+
 
 # 静态文件目录
 STATIC_DIR = Path(__file__).parent / "static"

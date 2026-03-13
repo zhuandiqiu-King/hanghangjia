@@ -6,7 +6,6 @@
       <button class="avatar-change-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
         <image wx:if="{{realAvatar}}" class="user-avatar" src="{{avatarUrl}}" mode="aspectFill" />
         <view wx:else class="avatar-placeholder">{{emojiAvatar}}</view>
-        <view class="avatar-edit-badge">📷</view>
       </button>
     </view>
     <text class="user-name">{{nickname || '未设置昵称'}}</text>
@@ -79,7 +78,7 @@
 
     <!-- 保存按钮 -->
     <view class="save-btn-wrap">
-      <view class="save-btn" bindtap="handleSave">💾 保存设置</view>
+      <view class="save-btn" bindtap="handleSave">✅ 保存设置</view>
     </view>
   </view>
 
@@ -97,6 +96,33 @@
       <view class="item-icon icon-about">📋</view>
       <text class="item-label">关于我们</text>
       <text class="arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 浇水提醒 -->
+  <view class="section">
+    <view class="section-title">🔔 浇水提醒</view>
+
+    <view class="setting-item">
+      <view class="item-icon icon-reminder">💧</view>
+      <text class="item-label">每日浇水提醒</text>
+      <switch
+        class="reminder-switch"
+        checked="{{reminderEnabled}}"
+        color="#2ECC71"
+        bindchange="onReminderSwitch"
+      />
+    </view>
+
+    <view wx:if="{{reminderEnabled}}" class="setting-item">
+      <view class="item-icon icon-time">⏰</view>
+      <text class="item-label">提醒时间</text>
+      <picker mode="time" value="{{reminderTime}}" bindchange="onReminderTimeChange">
+        <view class="item-value">
+          <text>{{reminderTime}}</text>
+          <text class="arrow">›</text>
+        </view>
+      </picker>
     </view>
   </view>
 

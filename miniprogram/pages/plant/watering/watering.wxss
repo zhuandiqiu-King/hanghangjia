@@ -1,0 +1,151 @@
+.watering-page {
+  min-height: 100vh;
+  background: #F5F0EB;
+  padding-bottom: 40rpx;
+}
+
+.page-header {
+  padding: 40rpx 32rpx 24rpx;
+  text-align: center;
+}
+
+.header-title {
+  display: block;
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #2C3E50;
+}
+
+.header-desc {
+  display: block;
+  font-size: 24rpx;
+  color: #95A5A6;
+  margin-top: 8rpx;
+}
+
+/* 批量浇水 */
+.batch-wrap {
+  padding: 0 32rpx 20rpx;
+}
+
+.batch-btn {
+  background: #fff;
+  color: #2C3E50;
+  font-size: 30rpx;
+  font-weight: 500;
+  text-align: center;
+  height: 84rpx;
+  line-height: 84rpx;
+  border-radius: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.06);
+}
+
+.batch-btn:active {
+  opacity: 0.85;
+  transform: scale(0.96);
+}
+
+/* 待浇水列表 */
+.reminder-list {
+  padding: 0 32rpx;
+}
+
+.reminder-item {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.06);
+}
+
+.plant-photo {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  border: 3rpx solid #A8E6CF;
+  flex-shrink: 0;
+}
+
+.plant-photo-placeholder {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #E8F8F0, #A8E6CF);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 44rpx;
+  flex-shrink: 0;
+}
+
+.plant-info {
+  flex: 1;
+  margin-left: 20rpx;
+  overflow: hidden;
+}
+
+.plant-name {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 500;
+  color: #2C3E50;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.plant-interval {
+  display: block;
+  font-size: 22rpx;
+  color: #95A5A6;
+  margin-top: 6rpx;
+}
+
+.water-btn {
+  flex-shrink: 0;
+  font-size: 26rpx;
+  color: #2ECC71;
+  background: #E8F8F0;
+  padding: 12rpx 24rpx;
+  border-radius: 20rpx;
+  font-weight: 500;
+}
+
+.water-btn:active {
+  opacity: 0.7;
+}
+
+/* 全部完成 */
+.done-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 120rpx 0;
+}
+
+.done-icon {
+  font-size: 120rpx;
+  margin-bottom: 24rpx;
+}
+
+.done-title {
+  font-size: 34rpx;
+  font-weight: bold;
+  color: #2C3E50;
+}
+
+.done-sub {
+  font-size: 26rpx;
+  color: #95A5A6;
+  margin-top: 12rpx;
+}
+
+/* 加载中 */
+.loading-state {
+  text-align: center;
+  padding: 120rpx 0;
+  font-size: 28rpx;
+  color: #95A5A6;
+}

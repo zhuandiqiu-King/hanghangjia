@@ -38,6 +38,9 @@ Page({
     characterOptions: CHARACTER_OPTIONS,
     styleIndex: 0,
     characterIndex: 0,
+    // 浇水提醒
+    reminderEnabled: false,
+    reminderTime: '06:30',
     // 状态
     showCustomInput: false,
     loading: true,
@@ -75,6 +78,8 @@ Page({
         styleIndex: styleIdx >= 0 ? styleIdx : 0,
         characterIndex: charIdx >= 0 ? charIdx : 0,
         showCustomInput: prefs.character === 'custom',
+        reminderEnabled: !!prefs.reminder_enabled,
+        reminderTime: prefs.reminder_time || '06:30',
         loading: false,
       })
     } catch (err) {
@@ -164,6 +169,53 @@ Page({
   // 称呼方式输入
   onPrefNicknameInput(e) {
     this.setData({ prefNickname: e.detail.value })
+  },
+
+  // 浇水提醒开关
+  onReminderSwitch(e) {
+    const enabled = e.detail.value
+    if (enabled) {
+      // 开启时请求订阅消息授权
+      wx.requestSubscribeMessage({
+        tmplIds: ['-1sJJ5rAhggfgcpjAEVx6ZwONBRGYnFema_WBSdZRbA'],
+        success: () => {
+          this.setData({ reminderEnabled: true })
+          this._saveReminderPrefs(true, this.data.reminderTime)
+        },
+        fail: () => {
+          // 用户拒绝授权也允许开启（后端仍可记录偏好）
+          this.setData({ reminderEnabled: true })
+          this._saveReminderPrefs(true, this.data.reminderTime)
+        },
+      })
+    } else {
+      this.setData({ reminderEnabled: false })
+      this._saveReminderPrefs(false, this.data.reminderTime)
+    }
+  },
+
+  // 提醒时间选择
+  onReminderTimeChange(e) {
+    const time = e.detail.value
+    this.setData({ reminderTime: time })
+    if (this.data.reminderEnabled) {
+      this._saveReminderPrefs(true, time)
+    }
+  },
+
+  // 保存提醒偏好到后端
+  async _saveReminderPrefs(enabled, time) {
+    try {
+      const prefs = {
+        reminder_enabled: enabled,
+        reminder_time: time,
+      }
+      await api.put('/api/user/profile', { preferences: prefs })
+      wx.showToast({ title: enabled ? '提醒已开启' : '提醒已关闭', icon: 'success' })
+    } catch (err) {
+      console.error('保存提醒设置失败', err)
+      wx.showToast({ title: '保存失败', icon: 'none' })
+    }
   },
 
   // 点击保存按钮

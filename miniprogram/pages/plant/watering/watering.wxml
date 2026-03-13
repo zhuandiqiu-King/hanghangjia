@@ -1,0 +1,55 @@
+<view class="watering-page">
+  <!-- 头部 -->
+  <view class="page-header">
+    <text class="header-title">💧 今日浇水</text>
+    <text class="header-desc">给你的植物浇浇水吧</text>
+  </view>
+
+  <!-- 批量浇水按钮 -->
+  <view wx:if="{{reminders.length >= 2}}" class="batch-wrap">
+    <view class="batch-btn" bindtap="handleWaterAll" loading="{{watering}}">
+      🚿 全部浇水（{{reminders.length}}棵）
+    </view>
+  </view>
+
+  <!-- 待浇水列表 -->
+  <view wx:if="{{reminders.length > 0}}" class="reminder-list">
+    <view
+      wx:for="{{reminders}}"
+      wx:key="id"
+      class="reminder-item"
+    >
+      <!-- 植物照片 -->
+      <image
+        wx:if="{{item.photo_url}}"
+        class="plant-photo"
+        src="{{item.photo_url}}"
+        mode="aspectFill"
+      />
+      <view wx:else class="plant-photo-placeholder">🌱</view>
+
+      <!-- 植物信息 -->
+      <view class="plant-info">
+        <text class="plant-name">{{item.name}}</text>
+        <text class="plant-interval">每 {{item.watering_interval}} 天浇一次</text>
+      </view>
+
+      <!-- 浇水按钮 -->
+      <view class="water-btn" bindtap="handleWaterOne" data-id="{{item.id}}">
+        ✅ 已浇水
+      </view>
+    </view>
+  </view>
+
+  <!-- 全部完成 -->
+  <view wx:elif="{{!loading}}" class="done-state">
+    <text class="done-icon">🌈</text>
+    <text class="done-title">今天的植物都浇过啦</text>
+    <text class="done-sub">明天再来看看吧～</text>
+  </view>
+
+  <!-- 加载中 -->
+  <view wx:if="{{loading}}" class="loading-state">
+    <text>加载中...</text>
+  </view>
+</view>

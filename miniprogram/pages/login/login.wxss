@@ -147,21 +147,23 @@
   width: 600rpx;
   height: 96rpx;
   line-height: 96rpx;
-  background: linear-gradient(135deg, #2ECC71, #27AE60);
-  color: #fff;
+  background: #fff;
+  color: #2C3E50;
   font-size: 34rpx;
   font-weight: 500;
-  border-radius: 48rpx;
+  border-radius: 24rpx;
   border: none;
-  box-shadow: 0 8rpx 24rpx rgba(46, 204, 113, 0.35);
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.06);
   position: relative;
   z-index: 1;
   letter-spacing: 4rpx;
+  text-align: center;
+  padding: 0;
 }
 
 .login-btn:active {
-  opacity: 0.9;
-  transform: scale(0.98);
+  opacity: 0.85;
+  transform: scale(0.96);
 }
 
 .login-footer {

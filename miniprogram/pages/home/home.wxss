@@ -3,6 +3,7 @@
   flex-direction: column;
   height: 100vh;
   background: #F5F0EB;
+  overflow-x: hidden;
 }
 
 /* 消息列表 */
@@ -21,6 +22,7 @@
   display: flex;
   align-items: flex-start;
   margin-bottom: 28rpx;
+  overflow: hidden;
 }
 
 .msg-left {
@@ -62,6 +64,9 @@
   font-size: 28rpx;
   line-height: 1.6;
   word-break: break-all;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  min-width: 0;
 }
 
 .bubble-ai {
@@ -114,6 +119,67 @@
     transform: scale(1);
     opacity: 1;
   }
+}
+
+/* 浇水任务卡片 */
+.watering-card {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 24rpx 28rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.06);
+  max-width: 80%;
+}
+
+.watering-card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.watering-card-icon {
+  font-size: 40rpx;
+  margin-right: 12rpx;
+}
+
+.watering-card-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #2C3E50;
+}
+
+.watering-card-names {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-bottom: 16rpx;
+}
+
+.plant-name-tag {
+  font-size: 24rpx;
+  color: #27AE60;
+  background: #E8F8F0;
+  padding: 6rpx 16rpx;
+  border-radius: 20rpx;
+}
+
+.more-tag {
+  color: #95A5A6;
+  background: #F0F0F0;
+}
+
+.watering-card-action {
+  text-align: right;
+}
+
+.watering-action-text {
+  font-size: 26rpx;
+  color: #2ECC71;
+  font-weight: 500;
+}
+
+.watering-card:active {
+  opacity: 0.85;
+  transform: scale(0.98);
 }
 
 /* 底部输入栏 */

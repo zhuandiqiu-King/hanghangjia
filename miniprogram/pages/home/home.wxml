@@ -17,8 +17,23 @@
       <!-- AI 头像 -->
       <view wx:if="{{item.role === 'ai'}}" class="avatar avatar-ai">🌱</view>
 
-      <!-- 消息气泡 -->
-      <view class="bubble {{item.role === 'user' ? 'bubble-user' : 'bubble-ai'}}">
+      <!-- 浇水任务卡片 -->
+      <view wx:if="{{item.type === 'watering_card'}}" class="watering-card" bindtap="goToWatering">
+        <view class="watering-card-header">
+          <text class="watering-card-icon">💧</text>
+          <text class="watering-card-title">今日有 {{item.count}} 棵植物需要浇水</text>
+        </view>
+        <view class="watering-card-names">
+          <text wx:for="{{item.names}}" wx:for-item="name" wx:key="*this" class="plant-name-tag">{{name}}</text>
+          <text wx:if="{{item.totalCount > 5}}" class="plant-name-tag more-tag">+{{item.totalCount - 5}}</text>
+        </view>
+        <view class="watering-card-action">
+          <text class="watering-action-text">去浇水 ›</text>
+        </view>
+      </view>
+
+      <!-- 普通消息气泡 -->
+      <view wx:elif="{{!item.type}}" class="bubble {{item.role === 'user' ? 'bubble-user' : 'bubble-ai'}}">
         <text>{{item.content}}</text>
       </view>
 

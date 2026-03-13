@@ -7,7 +7,8 @@
     "pages/plant/index/index",
     "pages/plant/add/add",
     "pages/plant/detail/detail",
-    "pages/onboarding/onboarding"
+    "pages/onboarding/onboarding",
+    "pages/plant/watering/watering"
   ],
   "window": {
     "navigationBarBackgroundColor": "#FFFFFF",
