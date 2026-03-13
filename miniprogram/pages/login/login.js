@@ -19,18 +19,15 @@ Page({
     login('', '')
       .then((data) => {
         console.log('登录成功', data)
-        const url = data.is_new_user
-          ? '/pages/onboarding/onboarding'
-          : '/pages/home/home'
-
+        // 仅新用户跳引导页，老用户直接进首页
         if (data.is_new_user) {
           wx.redirectTo({
-            url,
+            url: '/pages/onboarding/onboarding',
             fail: () => wx.switchTab({ url: '/pages/home/home' }),
           })
         } else {
           wx.switchTab({
-            url,
+            url: '/pages/home/home',
             fail: () => wx.reLaunch({ url: '/pages/home/home' }),
           })
         }

@@ -1,6 +1,26 @@
 const api = require('../../utils/api')
 const { isEmojiAvatar, getEmoji, hasRealAvatar } = require('../../utils/avatar')
 
+// 对话风格选项
+const STYLE_OPTIONS = [
+  { value: 'gentle', label: '温柔贴心' },
+  { value: 'humorous', label: '幽默有趣' },
+  { value: 'professional', label: '专业严谨' },
+  { value: 'energetic', label: '元气满满' },
+]
+
+// 角色人设选项
+const CHARACTER_OPTIONS = [
+  { value: 'none', label: '无' },
+  { value: 'cat', label: '🐱 小猫咪' },
+  { value: 'rabbit', label: '🐰 小兔叽' },
+  { value: 'dog', label: '🐶 小狗勾' },
+  { value: 'bear', label: '🐻 小熊仔' },
+  { value: 'fox', label: '🦊 小狐狸' },
+  { value: 'penguin', label: '🐧 小企鹅' },
+  { value: 'custom', label: '✏️ 自定义' },
+]
+
 Page({
   data: {
     nickname: '',
@@ -8,6 +28,17 @@ Page({
     emojiAvatar: '😊',
     realAvatar: false,
     saving: false,
+    // AI 偏好
+    chatStyle: 'gentle',
+    character: 'none',
+    customCharacter: '',
+    prefNickname: '',
+    // 选项
+    styleOptions: STYLE_OPTIONS,
+    characterOptions: CHARACTER_OPTIONS,
+    styleIndex: 0,
+    characterIndex: 0,
+    showCustomInput: false,
   },
 
   onLoad() {
@@ -60,18 +91,51 @@ Page({
     this.setData({ nickname: e.detail.value || '' })
   },
 
+  // AI 偏好
+  onStyleChange(e) {
+    const idx = Number(e.detail.value)
+    this.setData({ styleIndex: idx, chatStyle: STYLE_OPTIONS[idx].value })
+  },
+
+  onCharacterChange(e) {
+    const idx = Number(e.detail.value)
+    const char = CHARACTER_OPTIONS[idx].value
+    this.setData({
+      characterIndex: idx,
+      character: char,
+      showCustomInput: char === 'custom',
+    })
+  },
+
+  onCustomCharInput(e) {
+    this.setData({ customCharacter: e.detail.value })
+  },
+
+  onPrefNicknameInput(e) {
+    this.setData({ prefNickname: e.detail.value })
+  },
+
+  // 保存全部信息
   async handleSave() {
-    const { nickname, avatarUrl } = this.data
-    if (!nickname.trim()) {
-      wx.showToast({ title: '请输入昵称', icon: 'none' })
-      return
-    }
     this.setData({ saving: true })
     try {
-      await api.put('/api/user/profile', {
-        nickname: nickname.trim(),
-        avatar_url: avatarUrl || undefined,
-      })
+      const payload = {
+        preferences: {
+          chat_style: this.data.chatStyle,
+          character: this.data.character,
+          custom_character: this.data.customCharacter,
+          nickname: this.data.prefNickname,
+        },
+      }
+      // 有修改昵称才传
+      if (this.data.nickname.trim()) {
+        payload.nickname = this.data.nickname.trim()
+      }
+      // 有真实头像才传
+      if (this.data.realAvatar && this.data.avatarUrl) {
+        payload.avatar_url = this.data.avatarUrl
+      }
+      await api.put('/api/user/profile', payload)
       wx.showToast({ title: '设置成功', icon: 'success' })
       setTimeout(() => {
         wx.switchTab({ url: '/pages/home/home' })
@@ -84,6 +148,7 @@ Page({
     }
   },
 
+  // 跳过 — 使用默认值直接进首页
   handleSkip() {
     wx.switchTab({ url: '/pages/home/home' })
   },

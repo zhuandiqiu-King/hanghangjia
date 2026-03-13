@@ -5,7 +5,7 @@
     <view class="deco-circle deco-circle-2"></view>
   </view>
 
-  <view class="content">
+  <scroll-view class="content" scroll-y>
     <text class="welcome-text">欢迎来到夯夯家 🏠</text>
     <text class="welcome-sub">完善你的个人信息吧</text>
 
@@ -19,20 +19,86 @@
     </view>
 
     <!-- 昵称输入 -->
-    <view class="nickname-section">
-      <text class="field-label">昵称</text>
-      <input
-        class="nickname-input"
-        type="nickname"
-        placeholder="输入你的昵称"
-        value="{{nickname}}"
-        bindinput="onNicknameInput"
-        maxlength="20"
-      />
+    <view class="form-card">
+      <view class="field-row">
+        <text class="field-label">✏️ 昵称</text>
+        <input
+          class="field-input"
+          type="nickname"
+          placeholder="输入你的昵称"
+          value="{{nickname}}"
+          bindinput="onNicknameInput"
+          maxlength="20"
+        />
+      </view>
+    </view>
+
+    <!-- AI 偏好 -->
+    <view class="form-card">
+      <text class="card-title">🎨 AI 对话偏好</text>
+
+      <!-- 对话风格 -->
+      <picker
+        mode="selector"
+        range="{{styleOptions}}"
+        range-key="label"
+        value="{{styleIndex}}"
+        bindchange="onStyleChange"
+      >
+        <view class="field-row">
+          <text class="field-label">🎭 对话风格</text>
+          <view class="field-value">
+            <text>{{styleOptions[styleIndex].label}}</text>
+            <text class="arrow">›</text>
+          </view>
+        </view>
+      </picker>
+
+      <!-- 角色人设 -->
+      <picker
+        mode="selector"
+        range="{{characterOptions}}"
+        range-key="label"
+        value="{{characterIndex}}"
+        bindchange="onCharacterChange"
+      >
+        <view class="field-row">
+          <text class="field-label">🌟 角色人设</text>
+          <view class="field-value">
+            <text>{{characterOptions[characterIndex].label}}</text>
+            <text class="arrow">›</text>
+          </view>
+        </view>
+      </picker>
+
+      <!-- 自定义角色 -->
+      <view wx:if="{{showCustomInput}}" class="custom-wrap">
+        <input
+          class="field-input"
+          placeholder="描述你想要的 AI 角色..."
+          value="{{customCharacter}}"
+          bindinput="onCustomCharInput"
+          maxlength="100"
+        />
+      </view>
+
+      <!-- 称呼方式 -->
+      <view class="field-row">
+        <text class="field-label">💌 称呼方式</text>
+        <input
+          class="field-input-right"
+          placeholder="如：小主人、亲爱的"
+          value="{{prefNickname}}"
+          bindinput="onPrefNicknameInput"
+          maxlength="20"
+        />
+      </view>
     </view>
 
     <!-- 按钮区 -->
-    <button class="save-btn" bindtap="handleSave" loading="{{saving}}">完善信息</button>
-    <view class="skip-btn" bindtap="handleSkip">稍后再说</view>
-  </view>
+    <button class="save-btn" bindtap="handleSave" loading="{{saving}}">✅ 开始使用</button>
+    <view class="skip-btn" bindtap="handleSkip">稍后再说 ›</view>
+
+    <view class="bottom-space"></view>
+  </scroll-view>
 </view>
