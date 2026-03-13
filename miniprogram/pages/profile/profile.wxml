@@ -3,11 +3,14 @@
   <view class="user-header">
     <view class="header-deco"></view>
     <view class="avatar-wrap">
-      <image wx:if="{{avatarUrl}}" class="user-avatar" src="{{avatarUrl}}" mode="aspectFill" />
-      <view wx:else class="avatar-placeholder">😊</view>
+      <button class="avatar-change-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+        <image wx:if="{{realAvatar}}" class="user-avatar" src="{{avatarUrl}}" mode="aspectFill" />
+        <view wx:else class="avatar-placeholder">{{emojiAvatar}}</view>
+        <view class="avatar-edit-badge">📷</view>
+      </button>
     </view>
     <text class="user-name">{{nickname || '未设置昵称'}}</text>
-    <text class="user-tag">🌿 植物爱好者</text>
+    <text class="user-tag">🏠 夯夯家成员</text>
   </view>
 
   <!-- AI 对话偏好 -->
@@ -76,7 +79,7 @@
 
     <!-- 保存按钮 -->
     <view class="save-btn-wrap">
-      <button class="save-btn" bindtap="handleSave">💾 保存设置</button>
+      <view class="save-btn" bindtap="handleSave">💾 保存设置</view>
     </view>
   </view>
 

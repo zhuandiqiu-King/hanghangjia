@@ -14,6 +14,13 @@ from app.schemas import UserProfileOut, UserProfileUpdate
 router = APIRouter(prefix="/api/user", tags=["user"])
 
 
+def _is_profile_complete(user: User) -> bool:
+    """判断用户是否已完善个人信息"""
+    has_real_avatar = bool(user.avatar_url) and not user.avatar_url.startswith("emoji:")
+    has_nickname = bool(user.nickname)
+    return has_real_avatar and has_nickname
+
+
 @router.get("/profile", response_model=UserProfileOut)
 def get_profile(current_user: User = Depends(get_current_user)):
     """获取用户信息（含偏好设置）"""
@@ -29,6 +36,7 @@ def get_profile(current_user: User = Depends(get_current_user)):
         nickname=current_user.nickname,
         avatar_url=current_user.avatar_url,
         preferences=prefs,
+        is_profile_complete=_is_profile_complete(current_user),
     )
 
 
@@ -61,4 +69,5 @@ def update_profile(
         nickname=current_user.nickname,
         avatar_url=current_user.avatar_url,
         preferences=prefs,
+        is_profile_complete=_is_profile_complete(current_user),
     )

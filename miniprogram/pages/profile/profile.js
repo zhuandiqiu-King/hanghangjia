@@ -1,5 +1,6 @@
 const api = require('../../utils/api')
 const { clearToken } = require('../../utils/auth')
+const { isEmojiAvatar, getEmoji, hasRealAvatar } = require('../../utils/avatar')
 
 // 对话风格选项
 const STYLE_OPTIONS = [
@@ -25,11 +26,13 @@ Page({
   data: {
     nickname: '',
     avatarUrl: '',
+    emojiAvatar: '😊',
+    realAvatar: false,
     // 偏好
     chatStyle: 'gentle',
     character: 'none',
     customCharacter: '',
-    prefNickname: '',    // AI 对用户的称呼
+    prefNickname: '',
     // 选项
     styleOptions: STYLE_OPTIONS,
     characterOptions: CHARACTER_OPTIONS,
@@ -58,10 +61,13 @@ Page({
       const prefs = data.preferences || {}
       const styleIdx = STYLE_OPTIONS.findIndex(o => o.value === (prefs.chat_style || 'gentle'))
       const charIdx = CHARACTER_OPTIONS.findIndex(o => o.value === (prefs.character || 'none'))
+      const url = data.avatar_url || ''
 
       this.setData({
         nickname: data.nickname || '',
-        avatarUrl: data.avatar_url || '',
+        avatarUrl: url,
+        emojiAvatar: isEmojiAvatar(url) ? getEmoji(url) : '😊',
+        realAvatar: hasRealAvatar(url),
         chatStyle: prefs.chat_style || 'gentle',
         character: prefs.character || 'none',
         customCharacter: prefs.custom_character || '',
@@ -75,6 +81,40 @@ Page({
       console.error('加载用户信息失败', err)
       this.setData({ loading: false })
     }
+  },
+
+  // 修改头像
+  onChooseAvatar(e) {
+    const tempUrl = e.detail.avatarUrl
+    if (!tempUrl) return
+    const cloudPath = `avatars/${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`
+    wx.cloud.uploadFile({
+      cloudPath,
+      filePath: tempUrl,
+      success: (res) => {
+        wx.cloud.getTempFileURL({
+          fileList: [res.fileID],
+          success: async (urlRes) => {
+            const url = urlRes.fileList[0].tempFileURL
+            this.setData({ avatarUrl: url, realAvatar: true })
+            // 同步到后端
+            try {
+              await api.put('/api/user/profile', { avatar_url: url })
+              wx.showToast({ title: '头像已更新', icon: 'success' })
+            } catch (err) {
+              console.error('头像保存失败', err)
+            }
+          },
+          fail: () => {
+            this.setData({ avatarUrl: res.fileID, realAvatar: true })
+          },
+        })
+      },
+      fail: (err) => {
+        console.error('头像上传失败', err)
+        wx.showToast({ title: '上传失败', icon: 'none' })
+      },
+    })
   },
 
   // 修改昵称

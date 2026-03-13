@@ -72,6 +72,7 @@ class UserOut(BaseModel):
 class LoginResponse(BaseModel):
     token: str
     user: UserOut
+    is_new_user: bool = False
 
 
 # --- Chat schemas ---
@@ -100,6 +101,7 @@ class UserProfileOut(BaseModel):
     nickname: str
     avatar_url: Optional[str]
     preferences: dict = {}
+    is_profile_complete: bool = False
 
     model_config = {"from_attributes": True}
 

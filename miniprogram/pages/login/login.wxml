@@ -11,26 +11,8 @@
     <text class="logo-desc">你的家庭生活小助手</text>
   </view>
 
-  <!-- 头像 + 昵称 -->
-  <view class="profile-area">
-    <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
-      <image wx:if="{{avatarUrl}}" class="avatar-img" src="{{avatarUrl}}" mode="aspectFill" />
-      <view wx:else class="avatar-placeholder">
-        <text class="avatar-placeholder-icon">📷</text>
-        <text class="avatar-placeholder-text">选择头像</text>
-      </view>
-    </button>
-    <input
-      class="nickname-input"
-      type="nickname"
-      placeholder="点击获取微信昵称"
-      value="{{nickname}}"
-      bindinput="onNicknameInput"
-    />
-  </view>
-
   <button class="login-btn" bindtap="handleLogin" loading="{{loading}}">
-    🏠 开始使用
+    🏠 一键登录
   </button>
 
   <text class="login-footer">登录即表示同意使用协议</text>

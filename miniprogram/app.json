@@ -6,7 +6,8 @@
     "pages/login/login",
     "pages/plant/index/index",
     "pages/plant/add/add",
-    "pages/plant/detail/detail"
+    "pages/plant/detail/detail",
+    "pages/onboarding/onboarding"
   ],
   "window": {
     "navigationBarBackgroundColor": "#FFFFFF",
