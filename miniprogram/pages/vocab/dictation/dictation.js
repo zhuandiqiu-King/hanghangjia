@@ -235,34 +235,45 @@ Page({
     }
   },
 
-  /** 语音识别（通过后端接口） */
+  /** 语音识别：上传云存储 → 获取临时URL → 后端识别 */
   _recognizeVoice(filePath) {
-    wx.getFileSystemManager().readFile({
+    const cloudPath = `voice/${Date.now()}-${Math.random().toString(36).slice(2)}.mp3`
+
+    wx.cloud.uploadFile({
+      cloudPath,
       filePath,
-      encoding: 'base64',
-      success: (fileRes) => {
-        api.request({
-          url: '/api/chat/voice',
-          method: 'POST',
-          data: { audio_url: filePath },
-          timeout: 15000,
-        }).then((data) => {
-          const text = (data.text || '').replace(/[。，！？,.!?]/g, '').trim()
-          if (text) {
-            this.setData({ currentAnswer: text })
-            if (this._voiceTimer) clearTimeout(this._voiceTimer)
-            this._voiceTimer = setTimeout(() => {
-              this.nextWord()
-            }, 2000)
-          } else {
-            wx.showToast({ title: '没有识别到内容', icon: 'none' })
-          }
-        }).catch(() => {
-          wx.showToast({ title: '识别失败，请重试', icon: 'none' })
+      success: (uploadRes) => {
+        wx.cloud.getTempFileURL({
+          fileList: [uploadRes.fileID],
+          success: (urlRes) => {
+            const audioUrl = urlRes.fileList[0].tempFileURL
+            api.request({
+              url: '/api/chat/voice',
+              method: 'POST',
+              data: { audio_url: audioUrl },
+              timeout: 30000,
+            }).then((data) => {
+              const text = (data.text || '').replace(/[。，！？,.!?]/g, '').trim()
+              if (text) {
+                this.setData({ currentAnswer: text })
+                if (this._voiceTimer) clearTimeout(this._voiceTimer)
+                this._voiceTimer = setTimeout(() => {
+                  this.nextWord()
+                }, 2000)
+              } else {
+                wx.showToast({ title: '没有识别到内容', icon: 'none' })
+              }
+            }).catch(() => {
+              wx.showToast({ title: '识别失败，请重试', icon: 'none' })
+            })
+          },
+          fail: () => {
+            wx.showToast({ title: '上传失败', icon: 'none' })
+          },
         })
       },
       fail: () => {
-        wx.showToast({ title: '识别失败', icon: 'none' })
+        wx.showToast({ title: '上传失败', icon: 'none' })
       },
     })
   },
