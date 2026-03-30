@@ -6,7 +6,7 @@ import os
 import re
 import random
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -483,7 +483,8 @@ def dictation_history(
 # ===== 拍照识别单词 =====
 
 class OCRWordRequest(BaseModel):
-    image: str  # base64 编码的图片
+    image: Optional[str] = None      # base64 编码的图片
+    image_url: Optional[str] = None  # 图片 URL（优先使用）
 
 
 @router.post("/api/vocab/ocr-words")
@@ -492,6 +493,9 @@ def ocr_words(
     current_user: User = Depends(get_current_user),
 ):
     """拍照识别单词列表：拍摄单词表照片，AI 提取英文和中文"""
+    if not req.image_url and not req.image:
+        raise HTTPException(400, "请提供图片")
+
     api_key = os.getenv("DASHSCOPE_API_KEY")
     if not api_key:
         raise HTTPException(500, "未配置 DASHSCOPE_API_KEY")
@@ -503,9 +507,13 @@ def ocr_words(
         base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
     )
 
-    image_data = req.image
-    if not image_data.startswith("data:"):
-        image_data = f"data:image/jpeg;base64,{image_data}"
+    # 优先使用 URL，避免大 base64 传输
+    if req.image_url:
+        image_data = req.image_url
+    else:
+        image_data = req.image
+        if not image_data.startswith("data:"):
+            image_data = f"data:image/jpeg;base64,{image_data}"
 
     try:
         resp = client.chat.completions.create(

@@ -25,36 +25,40 @@ Page({
     })
   },
 
-  /**
-   * 缩小图片尺寸并压缩质量，返回 base64 字符串
-   * 最长边限制 1200px，JPEG quality 70
-   */
-  _resizeAndEncode(src) {
-    const MAX_SIDE = 1200
+  /** 压缩图片并上传到云存储，返回临时访问 URL */
+  _uploadImage(src) {
     return new Promise((resolve, reject) => {
-      wx.getImageInfo({
+      // 先压缩
+      wx.compressImage({
         src,
-        success: (info) => {
-          let w = info.width, h = info.height
-          if (w > MAX_SIDE || h > MAX_SIDE) {
-            const ratio = Math.min(MAX_SIDE / w, MAX_SIDE / h)
-            w = Math.round(w * ratio)
-            h = Math.round(h * ratio)
-          }
-          const canvas = wx.createOffscreenCanvas({ type: '2d', width: w, height: h })
-          const ctx = canvas.getContext('2d')
-          const img = canvas.createImage()
-          img.onload = () => {
-            ctx.drawImage(img, 0, 0, w, h)
-            const dataURL = canvas.toDataURL('image/jpeg', 0.7)
-            // 去掉 data:image/jpeg;base64, 前缀
-            const base64 = dataURL.replace(/^data:image\/\w+;base64,/, '')
-            resolve(base64)
-          }
-          img.onerror = () => reject(new Error('图片加载失败'))
-          img.src = src
-        },
-        fail: () => reject(new Error('获取图片信息失败')),
+        quality: 60,
+        success: (compRes) => { resolve(compRes.tempFilePath) },
+        fail: () => { resolve(src) },
+      })
+    }).then((filePath) => {
+      return new Promise((resolve, reject) => {
+        const cloudPath = 'ocr-temp/' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.jpg'
+        wx.cloud.uploadFile({
+          cloudPath,
+          filePath,
+          success: (res) => resolve(res.fileID),
+          fail: (err) => reject(err),
+        })
+      })
+    }).then((fileID) => {
+      return new Promise((resolve, reject) => {
+        wx.cloud.getTempFileURL({
+          fileList: [fileID],
+          success: (res) => {
+            const fileItem = res.fileList[0]
+            if (fileItem.status === 0 && fileItem.tempFileURL) {
+              resolve({ url: fileItem.tempFileURL, fileID })
+            } else {
+              reject(new Error('获取临时 URL 失败'))
+            }
+          },
+          fail: (err) => reject(err),
+        })
       })
     })
   },
@@ -63,31 +67,29 @@ Page({
   startRecognize() {
     this.setData({ step: 'loading' })
 
-    this._resizeAndEncode(this.data.imageSrc).then((base64) => {
-      api.request({
+    this._uploadImage(this.data.imageSrc).then(({ url, fileID }) => {
+      // 记录 fileID 以便后续清理
+      this._tempFileID = fileID
+      return api.request({
         url: '/api/vocab/ocr-words',
         method: 'POST',
-        data: { image: base64 },
+        data: { image_url: url },
         timeout: 60000,
-      }).then((data) => {
-        const words = (data.words || []).map((w, i) => ({
-          ...w,
-          idx: i,
-        }))
-        if (!words.length) {
-          wx.showToast({ title: '未识别到单词', icon: 'none' })
-          this.setData({ step: 'photo' })
-          return
-        }
-        this.setData({ words, step: 'confirm' })
-      }).catch((err) => {
-        console.error('识别失败', err)
-        wx.showToast({ title: '识别失败，请重试', icon: 'none' })
-        this.setData({ step: 'photo' })
       })
+    }).then((data) => {
+      const words = (data.words || []).map((w, i) => ({
+        ...w,
+        idx: i,
+      }))
+      if (!words.length) {
+        wx.showToast({ title: '未识别到单词', icon: 'none' })
+        this.setData({ step: 'photo' })
+        return
+      }
+      this.setData({ words, step: 'confirm' })
     }).catch((err) => {
-      console.error('图片处理失败', err)
-      wx.showToast({ title: '图片处理失败', icon: 'none' })
+      console.error('识别失败', err)
+      wx.showToast({ title: '识别失败，请重试', icon: 'none' })
       this.setData({ step: 'photo' })
     })
   },
