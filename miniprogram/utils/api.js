@@ -4,6 +4,7 @@
  * - 401 时静默重新登录并重试，失败再弹窗提示
  */
 const SERVICE_NAME = 'flask-h72v'
+const DEFAULT_TIMEOUT = 30000 // 30秒，兼容容器冷启动
 
 // 静默重登状态（防止多个请求同时触发）
 let _refreshingToken = null
@@ -84,9 +85,7 @@ function _doRequest(options, token) {
       },
     }
 
-    if (options.timeout) {
-      params.timeout = options.timeout
-    }
+    params.timeout = options.timeout || DEFAULT_TIMEOUT
 
     wx.cloud.callContainer(params)
   })
