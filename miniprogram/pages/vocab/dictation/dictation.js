@@ -24,27 +24,31 @@ Page({
     answers: [],
     inputFocus: false,
     recording: false,
+    voiceStatus: '', // playing | recording | recognizing
   },
 
   _voiceTimer: null,
+  _stopped: false, // 页面已卸载标记
 
   onLoad(opts) {
     this.setData({
       bookId: parseInt(opts.book_id),
       childId: parseInt(opts.child_id),
     })
-    // 如果从错题本跳转来，预设 mistakes_only
     if (opts.mistakes_only === '1') {
       this.setData({ range: 'mistakes' })
     }
     this._loadBookInfo()
     this._loadMistakeCount()
     this._initRecorder()
+    this._initAudioEndListener()
   },
 
   onUnload() {
+    this._stopped = true
     if (this._voiceTimer) clearTimeout(this._voiceTimer)
     innerAudioCtx.stop()
+    innerAudioCtx.offEnded()
   },
 
   _loadBookInfo() {
@@ -66,11 +70,56 @@ Page({
   _initRecorder() {
     recorderManager.onStop((res) => {
       this.setData({ recording: false })
-      if (res.duration < 500) return
+      if (this._stopped) return
+      // 点了"不会"触发的 stop
+      if (this._skipAfterStop) {
+        this._skipAfterStop = false
+        this.setData({ currentAnswer: '' })
+        this.nextWord()
+        return
+      }
+      if (res.duration < 500) {
+        // 录音太短，视为没说话，重播当前单词
+        if (this.data.mode === 'voice') {
+          this.setData({ voiceStatus: 'playing' })
+          setTimeout(() => this.playWord(), 800)
+        }
+        return
+      }
+      this.setData({ voiceStatus: 'recognizing' })
       this._recognizeVoice(res.tempFilePath)
     })
     recorderManager.onError(() => {
-      this.setData({ recording: false })
+      this.setData({ recording: false, voiceStatus: '' })
+    })
+  },
+
+  /** TTS 播放结束后，语音模式自动开始录音 */
+  _initAudioEndListener() {
+    innerAudioCtx.onEnded(() => {
+      if (this._stopped || this.data.mode !== 'voice' || this.data.step !== 'doing') return
+      setTimeout(() => this._autoStartRecord(), 300)
+    })
+  },
+
+  /** 自动开始录音 */
+  _autoStartRecord() {
+    if (this._stopped || this.data.recording) return
+    wx.authorize({
+      scope: 'scope.record',
+      success: () => {
+        this.setData({ recording: true, voiceStatus: 'recording' })
+        recorderManager.start({
+          duration: 5000,
+          sampleRate: 16000,
+          numberOfChannels: 1,
+          encodeBitRate: 48000,
+          format: 'mp3',
+        })
+      },
+      fail: () => {
+        wx.showToast({ title: '需要录音权限', icon: 'none' })
+      },
     })
   },
 
@@ -140,9 +189,15 @@ Page({
     const text = this.data.direction === 'en2cn' ? word.english : word.chinese
     const lang = this.data.direction === 'en2cn' ? 'en_US' : 'zh_CN'
 
+    if (this.data.mode === 'voice') {
+      this.setData({ voiceStatus: 'playing' })
+    }
     tts.speak(innerAudioCtx, text, lang).catch(() => {
-      // 降级：显示文字提示
       wx.showToast({ title: text, icon: 'none', duration: 2000 })
+      // TTS 失败时，语音模式也要触发录音
+      if (this.data.mode === 'voice') {
+        setTimeout(() => this._autoStartRecord(), 1500)
+      }
     })
   },
 
@@ -163,14 +218,29 @@ Page({
         currentIdx: currentIdx + 1,
         currentAnswer: '',
         inputFocus: false,
+        voiceStatus: '',
       })
       setTimeout(() => {
         this.setData({ inputFocus: mode === 'text' })
         this.playWord()
       }, 300)
     } else {
+      this.setData({ voiceStatus: '' })
       this._submitResults(newAnswers)
     }
+  },
+
+  /** 不会：记空答案，跳到下一个 */
+  skipWord() {
+    if (this._voiceTimer) clearTimeout(this._voiceTimer)
+    // 如果正在录音，先停掉
+    if (this.data.recording) {
+      this._skipAfterStop = true
+      recorderManager.stop()
+      return
+    }
+    this.setData({ currentAnswer: '' })
+    this.nextWord()
   },
 
   _submitResults(answers) {
@@ -207,29 +277,8 @@ Page({
 
   // ===== 语音输入 =====
 
-  startVoiceInput() {
-    if (this.data.recording) return
-    if (this._voiceTimer) clearTimeout(this._voiceTimer)
-
-    wx.authorize({
-      scope: 'scope.record',
-      success: () => {
-        this.setData({ recording: true })
-        recorderManager.start({
-          duration: 10000,
-          sampleRate: 16000,
-          numberOfChannels: 1,
-          encodeBitRate: 48000,
-          format: 'mp3',
-        })
-      },
-      fail: () => {
-        wx.showToast({ title: '需要录音权限', icon: 'none' })
-      },
-    })
-  },
-
-  stopVoiceInput() {
+  /** 手动停止录音（用户提前结束） */
+  stopRecording() {
     if (this.data.recording) {
       recorderManager.stop()
     }
@@ -253,26 +302,39 @@ Page({
               data: { audio_url: audioUrl },
               timeout: 30000,
             }).then((data) => {
+              if (this._stopped) return
               const text = (data.text || '').replace(/[。，！？,.!?]/g, '').trim()
+              // 说了"不会"等跳过关键词
+              if (text && /^(不会|不知道|跳过|过|pass)$/i.test(text)) {
+                this.setData({ currentAnswer: '', voiceStatus: '' })
+                this.nextWord()
+                return
+              }
               if (text) {
-                this.setData({ currentAnswer: text })
+                this.setData({ currentAnswer: text, voiceStatus: '' })
+                // 识别成功，1.5秒后自动下一个
                 if (this._voiceTimer) clearTimeout(this._voiceTimer)
-                this._voiceTimer = setTimeout(() => {
-                  this.nextWord()
-                }, 2000)
+                this._voiceTimer = setTimeout(() => this.nextWord(), 1500)
               } else {
-                wx.showToast({ title: '没有识别到内容', icon: 'none' })
+                // 没识别到内容，自动重播当前单词
+                wx.showToast({ title: '没听清，再来一次', icon: 'none', duration: 1000 })
+                this.setData({ voiceStatus: '' })
+                setTimeout(() => this.playWord(), 1200)
               }
             }).catch(() => {
-              wx.showToast({ title: '识别失败，请重试', icon: 'none' })
+              this.setData({ voiceStatus: '' })
+              wx.showToast({ title: '识别失败', icon: 'none', duration: 1000 })
+              setTimeout(() => this.playWord(), 1200)
             })
           },
           fail: () => {
+            this.setData({ voiceStatus: '' })
             wx.showToast({ title: '上传失败', icon: 'none' })
           },
         })
       },
       fail: () => {
+        this.setData({ voiceStatus: '' })
         wx.showToast({ title: '上传失败', icon: 'none' })
       },
     })

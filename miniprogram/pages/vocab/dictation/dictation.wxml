@@ -124,20 +124,37 @@
 
     <!-- 语音输入模式 -->
     <view wx:if="{{mode === 'voice'}}" class="answer-area">
+      <!-- 状态提示 -->
+      <view class="voice-status-bar">
+        <text wx:if="{{voiceStatus === 'playing'}}" class="voice-status-text status-playing">播放中...</text>
+        <text wx:elif="{{voiceStatus === 'recording'}}" class="voice-status-text status-recording">请说出答案...</text>
+        <text wx:elif="{{voiceStatus === 'recognizing'}}" class="voice-status-text status-recognizing">识别中...</text>
+        <text wx:else class="voice-status-text">准备中</text>
+      </view>
+
+      <!-- 识别结果 -->
       <view class="voice-answer-display">
         <text wx:if="{{currentAnswer}}" class="voice-answer-text">{{currentAnswer}}</text>
-        <text wx:else class="voice-answer-placeholder">等待语音输入...</text>
+        <text wx:else class="voice-answer-placeholder">{{voiceStatus === 'recording' ? '正在听...' : '等待语音'}}</text>
       </view>
-      <view
-        class="voice-record-btn {{recording ? 'voice-recording' : ''}}"
-        bindtouchstart="startVoiceInput"
-        bindtouchend="stopVoiceInput"
-        bindtouchcancel="stopVoiceInput"
-      >
-        <text>{{recording ? '🔴 松开识别' : '🎙️ 按住说答案'}}</text>
+
+      <!-- 录音指示动画 -->
+      <view wx:if="{{recording}}" class="voice-wave" bindtap="stopRecording">
+        <view class="wave-bar"></view>
+        <view class="wave-bar"></view>
+        <view class="wave-bar"></view>
+        <view class="wave-bar"></view>
+        <view class="wave-bar"></view>
       </view>
-      <view class="voice-skip-btn" bindtap="nextWord">
-        <text>{{currentIdx < words.length - 1 ? '跳过 ›' : '完成 ✓'}}</text>
+
+      <!-- 底部操作按钮 -->
+      <view class="voice-bottom-actions">
+        <view class="voice-replay-btn" bindtap="playWord">
+          <text>再听一遍</text>
+        </view>
+        <view class="voice-skip-btn" bindtap="skipWord">
+          <text>不会</text>
+        </view>
       </view>
     </view>
   </view>

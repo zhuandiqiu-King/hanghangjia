@@ -201,9 +201,32 @@
 }
 
 /* 语音模式 */
+.voice-status-bar {
+  text-align: center;
+  margin-bottom: 8rpx;
+}
+
+.voice-status-text {
+  font-size: 26rpx;
+  color: #95A5A6;
+  font-weight: 500;
+}
+
+.status-playing {
+  color: #3498DB;
+}
+
+.status-recording {
+  color: #E74C3C;
+}
+
+.status-recognizing {
+  color: #F39C12;
+}
+
 .voice-answer-display {
-  min-height: 88rpx;
-  padding: 24rpx 28rpx;
+  min-height: 120rpx;
+  padding: 32rpx 28rpx;
   background: #fff;
   border-radius: 20rpx;
   box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.05);
@@ -213,8 +236,8 @@
 }
 
 .voice-answer-text {
-  font-size: 36rpx;
-  font-weight: 500;
+  font-size: 40rpx;
+  font-weight: 600;
   color: #2C3E50;
 }
 
@@ -223,29 +246,72 @@
   color: #C0C0C0;
 }
 
-.voice-record-btn {
-  height: 96rpx;
-  line-height: 96rpx;
+/* 录音波形动画 */
+.voice-wave {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  height: 80rpx;
+  padding: 16rpx 0;
+}
+
+.wave-bar {
+  width: 8rpx;
+  height: 32rpx;
+  background: #E74C3C;
+  border-radius: 4rpx;
+  animation: waveAnim 0.8s ease-in-out infinite;
+}
+
+.wave-bar:nth-child(1) { animation-delay: 0s; }
+.wave-bar:nth-child(2) { animation-delay: 0.15s; }
+.wave-bar:nth-child(3) { animation-delay: 0.3s; }
+.wave-bar:nth-child(4) { animation-delay: 0.15s; }
+.wave-bar:nth-child(5) { animation-delay: 0s; }
+
+@keyframes waveAnim {
+  0%, 100% { height: 16rpx; }
+  50% { height: 56rpx; }
+}
+
+/* 底部操作 */
+.voice-bottom-actions {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 8rpx;
+}
+
+.voice-replay-btn {
+  flex: 1;
+  height: 80rpx;
+  line-height: 80rpx;
   text-align: center;
   background: #fff;
-  border-radius: 20rpx;
-  font-size: 30rpx;
-  color: #2C3E50;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  color: #3498DB;
   font-weight: 500;
   box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.05);
 }
 
-.voice-record-btn:active,
-.voice-recording {
-  background: linear-gradient(135deg, #E74C3C, #C0392B);
-  color: #fff;
-  box-shadow: 0 4rpx 16rpx rgba(231, 76, 60, 0.3);
+.voice-replay-btn:active {
+  opacity: 0.7;
 }
 
 .voice-skip-btn {
-  height: 72rpx;
-  line-height: 72rpx;
+  flex: 1;
+  height: 80rpx;
+  line-height: 80rpx;
   text-align: center;
+  background: #fff;
+  border-radius: 16rpx;
   font-size: 28rpx;
-  color: #95A5A6;
+  color: #E74C3C;
+  font-weight: 500;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.05);
+}
+
+.voice-skip-btn:active {
+  opacity: 0.7;
 }
