@@ -65,33 +65,71 @@ Page({
 
   /** 开始识别 */
   startRecognize() {
+    this._clearPollTimer()
     this.setData({ step: 'loading' })
 
     this._uploadImage(this.data.imageSrc).then(({ url, fileID }) => {
       // 记录 fileID 以便后续清理
       this._tempFileID = fileID
-      return api.request({
-        url: '/api/vocab/ocr-words',
-        method: 'POST',
-        data: { image_url: url },
-        timeout: 60000,
+      return api.post('/api/vocab/ocr-tasks', {
+        image_url: url,
       })
-    }).then((data) => {
-      const words = (data.words || []).map((w, i) => ({
+    }).then(({ task_id }) => {
+      return this._pollOCR(task_id)
+    }).then((words) => {
+      const normalized = (words || []).map((w, i) => ({
         ...w,
         idx: i,
       }))
-      if (!words.length) {
+      if (!normalized.length) {
         wx.showToast({ title: '未识别到单词', icon: 'none' })
         this.setData({ step: 'photo' })
         return
       }
-      this.setData({ words, step: 'confirm' })
+      this.setData({ words: normalized, step: 'confirm' })
     }).catch((err) => {
       console.error('识别失败', err)
-      wx.showToast({ title: '识别失败，请重试', icon: 'none' })
+      const msg = (err && err.message) ? err.message : '识别失败，请重试'
+      wx.showToast({ title: msg.length > 7 ? '识别失败，请稍后重试' : msg, icon: 'none' })
       this.setData({ step: 'photo' })
     })
+  },
+
+  /** 轮询后端 OCR 任务 */
+  _pollOCR(taskId, attempt = 0) {
+    const MAX_ATTEMPTS = 20
+    return new Promise((resolve, reject) => {
+      const poll = () => {
+        api.get(`/api/vocab/ocr-tasks/${taskId}`).then((task) => {
+          if (!task) {
+            reject(new Error('任务不存在'))
+            return
+          }
+          if (task.status === 'success') {
+            resolve(task.words || [])
+            return
+          }
+          if (task.status === 'error') {
+            reject(new Error(task.error || '识别失败'))
+            return
+          }
+          if (attempt >= MAX_ATTEMPTS) {
+            reject(new Error('识别超时，请稍后重试'))
+            return
+          }
+          attempt += 1
+          this._pollTimer = setTimeout(poll, 1500)
+        }).catch(reject)
+      }
+      poll()
+    })
+  },
+
+  _clearPollTimer() {
+    if (this._pollTimer) {
+      clearTimeout(this._pollTimer)
+      this._pollTimer = null
+    }
   },
 
   /** 编辑英文 */
@@ -147,5 +185,9 @@ Page({
       console.error('保存失败', err)
       wx.showToast({ title: '保存失败', icon: 'none' })
     })
+  },
+
+  onUnload() {
+    this._clearPollTimer()
   },
 })

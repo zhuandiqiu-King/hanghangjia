@@ -142,13 +142,15 @@ def add_plant(data: PlantCreate, db: Session = Depends(get_db), current_user: Us
 @router.get("", response_model=list[PlantOut])
 def list_plants(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     family_id = _get_family_id(current_user)
-    return crud.get_plants(db, family_id=family_id)
+    if family_id is not None:
+        return crud.get_plants(db, family_id=family_id)
+    return crud.get_plants(db, user_id=current_user.id)
 
 
 @router.get("/{plant_id}", response_model=PlantOut)
 def get_plant(plant_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     family_id = _get_family_id(current_user)
-    plant = crud.get_plant(db, plant_id, family_id=family_id)
+    plant = crud.get_plant(db, plant_id, family_id=family_id, user_id=current_user.id)
     if not plant:
         raise HTTPException(status_code=404, detail="Plant not found")
     return plant
@@ -157,7 +159,7 @@ def get_plant(plant_id: int, db: Session = Depends(get_db), current_user: User =
 @router.put("/{plant_id}", response_model=PlantOut)
 def update_plant(plant_id: int, data: PlantUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     family_id = _get_family_id(current_user)
-    plant = crud.get_plant(db, plant_id, family_id=family_id)
+    plant = crud.get_plant(db, plant_id, family_id=family_id, user_id=current_user.id)
     if not plant:
         raise HTTPException(status_code=404, detail="Plant not found")
     return crud.update_plant(db, plant, data)
@@ -166,7 +168,7 @@ def update_plant(plant_id: int, data: PlantUpdate, db: Session = Depends(get_db)
 @router.delete("/{plant_id}", status_code=204)
 def delete_plant(plant_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     family_id = _get_family_id(current_user)
-    plant = crud.get_plant(db, plant_id, family_id=family_id)
+    plant = crud.get_plant(db, plant_id, family_id=family_id, user_id=current_user.id)
     if not plant:
         raise HTTPException(status_code=404, detail="Plant not found")
     # 权限检查：仅管理员或植物添加者可删除

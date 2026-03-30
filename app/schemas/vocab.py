@@ -92,3 +92,25 @@ class MistakeOut(BaseModel):
     last_wrong_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class OCRTaskCreateRequest(BaseModel):
+    image: Optional[str] = Field(default=None, description="base64 图片")
+    image_url: Optional[str] = Field(default=None, description="图片 URL")
+
+
+class OCRWordResult(BaseModel):
+    english: str
+    chinese: str
+    phonetic: Optional[str] = None
+
+
+class OCRTaskOut(BaseModel):
+    id: int
+    status: str
+    words: Optional[List[OCRWordResult]] = None
+    error: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}

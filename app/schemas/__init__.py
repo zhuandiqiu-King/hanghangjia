@@ -14,7 +14,7 @@ from app.schemas.vocab import (  # noqa: F401
     WordCreate, WordOut, WordBookCreate, WordBookOut, WordBookDetailOut,
     BatchWordCreate,
     DictationStartRequest, DictationResultSubmit, DictationSubmitRequest, DictationSessionOut,
-    MistakeOut,
+    MistakeOut, OCRTaskCreateRequest, OCRTaskOut, OCRWordResult,
 )
 from app.schemas.shopping import (  # noqa: F401
     ShoppingCategoryEnum,

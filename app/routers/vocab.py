@@ -18,6 +18,7 @@ from app.auth import get_current_user
 from app.models import (
     User, Child, WordBook, Word,
     DictationSession, DictationResult, MistakeRecord,
+    OCRTask,
 )
 from app.schemas import (
     ChildCreate, ChildOut,
@@ -25,6 +26,7 @@ from app.schemas import (
     WordCreate, WordOut, BatchWordCreate,
     DictationStartRequest, DictationSubmitRequest, DictationSessionOut,
     MistakeOut,
+    OCRTaskCreateRequest, OCRTaskOut,
 )
 
 router = APIRouter(tags=["vocab"])
@@ -480,94 +482,6 @@ def dictation_history(
     ]
 
 
-# ===== 拍照识别单词 =====
-
-class OCRWordRequest(BaseModel):
-    image: Optional[str] = None      # base64 编码的图片
-    image_url: Optional[str] = None  # 图片 URL（优先使用）
-
-
-@router.post("/api/vocab/ocr-words")
-def ocr_words(
-    req: OCRWordRequest,
-    current_user: User = Depends(get_current_user),
-):
-    """拍照识别单词列表：拍摄单词表照片，AI 提取英文和中文"""
-    if not req.image_url and not req.image:
-        raise HTTPException(400, "请提供图片")
-
-    api_key = os.getenv("DASHSCOPE_API_KEY")
-    if not api_key:
-        raise HTTPException(500, "未配置 DASHSCOPE_API_KEY")
-
-    from openai import OpenAI
-
-    client = OpenAI(
-        api_key=api_key,
-        base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
-    )
-
-    # 优先使用 URL，避免大 base64 传输
-    if req.image_url:
-        image_data = req.image_url
-    else:
-        image_data = req.image
-        if not image_data.startswith("data:"):
-            image_data = f"data:image/jpeg;base64,{image_data}"
-
-    try:
-        resp = client.chat.completions.create(
-            model="qwen-vl-plus",
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "image_url",
-                            "image_url": {"url": image_data},
-                        },
-                        {
-                            "type": "text",
-                            "text": (
-                                "请识别这张图片中的单词列表，提取每个单词的英文和中文释义。\n"
-                                "返回 JSON 数组格式（不要用 markdown 代码块包裹），每个元素包含：\n"
-                                '- "english": 英文单词或短语\n'
-                                '- "chinese": 中文释义\n'
-                                '- "phonetic": 音标（如果图片中有，没有则为 null）\n'
-                                "只返回 JSON 数组，不要其他内容。示例：\n"
-                                '[{"english": "apple", "chinese": "苹果", "phonetic": "/ˈæp.əl/"}]'
-                            ),
-                        },
-                    ],
-                }
-            ],
-        )
-        content = resp.choices[0].message.content.strip()
-        # 提取 JSON 数组
-        json_match = re.search(r"\[.*\]", content, re.DOTALL)
-        if not json_match:
-            raise ValueError(f"AI 返回内容无法解析: {content}")
-        words = json.loads(json_match.group())
-
-        # 规范化
-        result = []
-        for w in words:
-            en = (w.get("english") or "").strip()
-            cn = (w.get("chinese") or "").strip()
-            if en and cn:
-                result.append({
-                    "english": en,
-                    "chinese": cn,
-                    "phonetic": (w.get("phonetic") or "").strip() or None,
-                })
-        return {"words": result, "count": len(result)}
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(500, f"识别失败：{str(e)}")
-
-
 # ===== 拍照批改 =====
 
 class PhotoCheckRequest(BaseModel):
@@ -662,3 +576,53 @@ def photo_check(
         raise
     except Exception as e:
         raise HTTPException(500, f"批改失败：{str(e)}")
+
+
+def _load_task_words(task: OCRTask) -> Optional[List[dict]]:
+    if not task.result:
+        return None
+    try:
+        return json.loads(task.result)
+    except json.JSONDecodeError:
+        return None
+
+
+@router.post("/api/vocab/ocr-tasks", response_model=dict)
+def create_ocr_task(
+    req: OCRTaskCreateRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if not req.image and not req.image_url:
+        raise HTTPException(400, "请提供图片")
+
+    task = OCRTask(
+        user_id=current_user.id,
+        status="pending",
+        image_url=req.image_url,
+        image_data=req.image,
+    )
+    db.add(task)
+    db.commit()
+    db.refresh(task)
+    return {"task_id": task.id}
+
+
+@router.get("/api/vocab/ocr-tasks/{task_id}", response_model=OCRTaskOut)
+def get_ocr_task(
+    task_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    task = db.get(OCRTask, task_id)
+    if not task or task.user_id != current_user.id:
+        raise HTTPException(404, "任务不存在")
+
+    return OCRTaskOut(
+        id=task.id,
+        status=task.status,
+        words=_load_task_words(task),
+        error=task.error,
+        created_at=task.created_at,
+        updated_at=task.updated_at,
+    )

@@ -1,6 +1,7 @@
 """定时任务：每日浇水提醒推送"""
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import os
@@ -12,6 +13,7 @@ from sqlalchemy import select
 
 from app.database import SessionLocal
 from app.models import User, Plant, FamilyMember
+from app.services.ocr import process_pending_ocr_tasks
 from app.wx_push import send_watering_reminder
 
 logger = logging.getLogger(__name__)
@@ -83,12 +85,25 @@ async def _check_and_push():
         db.close()
 
 
+async def _run_ocr_task_worker():
+    """定期从数据库取待处理 OCR 任务"""
+    loop = asyncio.get_running_loop()
+    await loop.run_in_executor(None, process_pending_ocr_tasks)
+
+
 def start_scheduler():
     """启动定时任务"""
     scheduler.add_job(
         _check_and_push,
         trigger=CronTrigger(minute="*"),
         id="watering_reminder",
+        replace_existing=True,
+    )
+    scheduler.add_job(
+        _run_ocr_task_worker,
+        trigger="interval",
+        seconds=int(os.getenv("OCR_TASK_INTERVAL_SECONDS", "5")),
+        id="ocr_task_worker",
         replace_existing=True,
     )
     scheduler.start()
