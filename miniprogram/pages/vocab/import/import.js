@@ -26,16 +26,35 @@ Page({
   },
 
   /**
-   * 压缩图片，确保 base64 不超过云托管请求体限制
-   * 返回 Promise<string>，resolve 压缩后的临时文件路径
+   * 缩小图片尺寸并压缩质量，返回 base64 字符串
+   * 最长边限制 1200px，JPEG quality 70
    */
-  _compressImage(src) {
+  _resizeAndEncode(src) {
+    const MAX_SIDE = 1200
     return new Promise((resolve, reject) => {
-      wx.compressImage({
+      wx.getImageInfo({
         src,
-        quality: 60,
-        success: (res) => resolve(res.tempFilePath),
-        fail: () => resolve(src), // 压缩失败则用原图
+        success: (info) => {
+          let w = info.width, h = info.height
+          if (w > MAX_SIDE || h > MAX_SIDE) {
+            const ratio = Math.min(MAX_SIDE / w, MAX_SIDE / h)
+            w = Math.round(w * ratio)
+            h = Math.round(h * ratio)
+          }
+          const canvas = wx.createOffscreenCanvas({ type: '2d', width: w, height: h })
+          const ctx = canvas.getContext('2d')
+          const img = canvas.createImage()
+          img.onload = () => {
+            ctx.drawImage(img, 0, 0, w, h)
+            const dataURL = canvas.toDataURL('image/jpeg', 0.7)
+            // 去掉 data:image/jpeg;base64, 前缀
+            const base64 = dataURL.replace(/^data:image\/\w+;base64,/, '')
+            resolve(base64)
+          }
+          img.onerror = () => reject(new Error('图片加载失败'))
+          img.src = src
+        },
+        fail: () => reject(new Error('获取图片信息失败')),
       })
     })
   },
@@ -44,41 +63,32 @@ Page({
   startRecognize() {
     this.setData({ step: 'loading' })
 
-    // 先压缩图片再读取 base64
-    this._compressImage(this.data.imageSrc).then((compressedPath) => {
-      const fs = wx.getFileSystemManager()
-      fs.readFile({
-        filePath: compressedPath,
-        encoding: 'base64',
-        success: (res) => {
-          const base64 = res.data
-          api.request({
-            url: '/api/vocab/ocr-words',
-            method: 'POST',
-            data: { image: base64 },
-            timeout: 60000,
-          }).then((data) => {
-            const words = (data.words || []).map((w, i) => ({
-              ...w,
-              idx: i,
-            }))
-            if (!words.length) {
-              wx.showToast({ title: '未识别到单词', icon: 'none' })
-              this.setData({ step: 'photo' })
-              return
-            }
-            this.setData({ words, step: 'confirm' })
-          }).catch((err) => {
-            console.error('识别失败', err)
-            wx.showToast({ title: '识别失败，请重试', icon: 'none' })
-            this.setData({ step: 'photo' })
-          })
-        },
-        fail: () => {
-          wx.showToast({ title: '读取图片失败', icon: 'none' })
+    this._resizeAndEncode(this.data.imageSrc).then((base64) => {
+      api.request({
+        url: '/api/vocab/ocr-words',
+        method: 'POST',
+        data: { image: base64 },
+        timeout: 60000,
+      }).then((data) => {
+        const words = (data.words || []).map((w, i) => ({
+          ...w,
+          idx: i,
+        }))
+        if (!words.length) {
+          wx.showToast({ title: '未识别到单词', icon: 'none' })
           this.setData({ step: 'photo' })
-        },
+          return
+        }
+        this.setData({ words, step: 'confirm' })
+      }).catch((err) => {
+        console.error('识别失败', err)
+        wx.showToast({ title: '识别失败，请重试', icon: 'none' })
+        this.setData({ step: 'photo' })
       })
+    }).catch((err) => {
+      console.error('图片处理失败', err)
+      wx.showToast({ title: '图片处理失败', icon: 'none' })
+      this.setData({ step: 'photo' })
     })
   },
 
