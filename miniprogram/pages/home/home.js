@@ -1,303 +1,124 @@
 const api = require('../../utils/api')
 
-const recorderManager = wx.getRecorderManager()
-
 Page({
   data: {
-    messages: [],
-    inputValue: '',
-    loading: false,
-    scrollId: '',
-    voiceMode: false,
-    recording: false,
-    hasRecordAuth: false,
+    loggedIn: false,
+    nickname: '',
+    familyName: '',
+    dateText: '',
+    todayTasks: [],
+    weekDone: 0,
+    weekPending: 0,
+    familyMembers: 1,
   },
 
   onLoad() {
-    // 录音真正启动回调
-    recorderManager.onStart(() => {
-      this._recorderStarted = true
-      this.setData({ recording: true })
-      // 如果在启动前用户已松手，立即停止
-      if (this._pendingStop) {
-        this._pendingStop = false
-        recorderManager.stop()
-      }
-    })
-
-    // 录音结束回调
-    recorderManager.onStop((res) => {
-      this._recorderStarted = false
-      this.setData({ recording: false })
-      if (res.duration < 1000) {
-        wx.showToast({ title: '说话时间太短', icon: 'none' })
-        return
-      }
-      this.handleVoiceFile(res.tempFilePath)
-    })
-
-    recorderManager.onError((err) => {
-      console.error('录音失败', err)
-      this._recorderStarted = false
-      this._pendingStop = false
-      this.setData({ recording: false })
-    })
+    this._setDate()
   },
 
   onShow() {
     const token = wx.getStorageSync('token')
-    if (!token) {
-      wx.redirectTo({ url: '/pages/login/login' })
-      return
+    if (token) {
+      this.setData({ loggedIn: true })
+      this._loadProfile()
+      this._loadTodayTasks()
+    } else {
+      this.setData({ loggedIn: false, nickname: '', familyName: '我的家', todayTasks: [] })
     }
-    if (!this.data.messages.length) {
-      this.setData({
-        messages: [{
-          role: 'ai',
-          content: '你好！我是夯夯 🏠\n有什么家庭生活问题可以问我哦～\n比如植物养护、家居清洁、烹饪技巧等 😊',
-        }],
-      })
-    }
-    // 每日浇水任务卡片
-    this._checkWateringCard()
   },
 
-  /** 检查并插入每日浇水任务卡片 */
-  _checkWateringCard() {
-    const today = new Date().toISOString().slice(0, 10)
-    const lastDate = wx.getStorageSync('last_watering_card_date')
-    if (lastDate === today) return // 今天已插入过
+  /** 设置日期文案 */
+  _setDate() {
+    const days = ['日', '一', '二', '三', '四', '五', '六']
+    const now = new Date()
+    const m = now.getMonth() + 1
+    const d = now.getDate()
+    const w = days[now.getDay()]
+    this.setData({ dateText: `${m}月${d}日 周${w}` })
+  },
 
+  /** 加载用户信息 */
+  _loadProfile() {
+    api.get('/api/user/profile')
+      .then((data) => {
+        this.setData({
+          nickname: data.nickname || '',
+          familyName: data.family_name || '我的家',
+          familyMembers: data.family_members || 1,
+        })
+      })
+      .catch(() => {})
+  },
+
+  /** 加载今日任务（先从浇水提醒获取） */
+  _loadTodayTasks() {
     api.get('/api/reminders')
       .then((data) => {
         const plants = data.plants || data || []
-        if (!plants.length) return
-        const names = plants.map((p) => p.name || p.nickname || '未命名')
-        const cardMsg = {
-          role: 'ai',
-          type: 'watering_card',
-          count: plants.length,
-          names: names.slice(0, 5), // 最多展示 5 棵
-          totalCount: plants.length,
-        }
-        const messages = [...this.data.messages, cardMsg]
+        const tasks = plants.map((p, i) => ({
+          id: `water_${p.id || i}`,
+          icon: '💧',
+          name: `给${p.name || p.nickname || '植物'}浇水`,
+          done: false,
+          type: 'watering',
+          plantId: p.id,
+        }))
         this.setData({
-          messages,
-          scrollId: `msg-${messages.length - 1}`,
+          todayTasks: tasks,
+          weekPending: tasks.filter(t => !t.done).length,
+          weekDone: 0,
         })
-        wx.setStorageSync('last_watering_card_date', today)
       })
-      .catch((err) => {
-        console.error('获取待浇水植物失败', err)
+      .catch(() => {
+        this.setData({ todayTasks: [] })
       })
   },
 
-  /** 点击浇水卡片跳转 */
-  goToWatering() {
-    wx.navigateTo({ url: '/pages/plant/watering/watering' })
-  },
-
-  onInput(e) {
-    this.setData({ inputValue: e.detail.value })
-  },
-
-  // 切换语音/文字模式 — 进入语音模式时先检查权限
-  toggleVoice() {
-    const entering = !this.data.voiceMode
-    if (entering) {
-      this._checkRecordAuth().then((authorized) => {
-        if (authorized) {
-          this.setData({ voiceMode: true, hasRecordAuth: true })
-        }
-      })
-    } else {
-      this.setData({ voiceMode: false })
-    }
-  },
-
-  // 检查录音权限
-  _checkRecordAuth() {
-    return new Promise((resolve) => {
-      wx.getSetting({
-        success: (res) => {
-          if (res.authSetting['scope.record']) {
-            resolve(true)
-          } else if (res.authSetting['scope.record'] === false) {
-            // 被拒绝过，引导去设置页开启
-            wx.showModal({
-              title: '需要录音权限',
-              content: '请在设置中开启录音权限，才能使用语音功能',
-              confirmText: '去设置',
-              success: (modalRes) => {
-                if (modalRes.confirm) {
-                  wx.openSetting({
-                    success: (settingRes) => {
-                      resolve(!!settingRes.authSetting['scope.record'])
-                    },
-                    fail: () => resolve(false),
-                  })
-                } else {
-                  resolve(false)
-                }
-              },
-            })
-          } else {
-            // 未请求过，主动发起授权
-            wx.authorize({
-              scope: 'scope.record',
-              success: () => resolve(true),
-              fail: () => {
-                wx.showToast({ title: '需要录音权限才能使用语音', icon: 'none' })
-                resolve(false)
-              },
-            })
-          }
-        },
-        fail: () => resolve(false),
-      })
+  /** 切换任务完成状态 */
+  toggleTask(e) {
+    const idx = e.currentTarget.dataset.idx
+    const tasks = [...this.data.todayTasks]
+    tasks[idx].done = !tasks[idx].done
+    const done = tasks.filter(t => t.done).length
+    const pending = tasks.filter(t => !t.done).length
+    this.setData({
+      todayTasks: tasks,
+      weekDone: done,
+      weekPending: pending,
     })
   },
 
-  // 长按开始录音
-  startRecord() {
-    if (this.data.loading || this.data.recording) return
-    if (!this.data.hasRecordAuth) {
-      this._checkRecordAuth().then((ok) => {
-        if (ok) {
-          this.setData({ hasRecordAuth: true })
-          this._doStartRecord()
-        }
+  /** 跳转登录 */
+  goLogin() {
+    wx.navigateTo({ url: '/pages/login/login' })
+  },
+
+  /** 快捷入口跳转 */
+  goTo(e) {
+    const url = e.currentTarget.dataset.url
+    if (url.indexOf('/pages/tools/') === 0) {
+      wx.switchTab({ url })
+    } else {
+      wx.navigateTo({ url })
+    }
+  },
+
+  /** 跳转 AI 聊天 */
+  goToChat() {
+    const token = wx.getStorageSync('token')
+    if (!token) {
+      wx.showModal({
+        title: '提示',
+        content: '登录后才能使用 AI 聊天，是否前往登录？',
+        confirmText: '去登录',
+        success(res) {
+          if (res.confirm) {
+            wx.navigateTo({ url: '/pages/login/login' })
+          }
+        },
       })
       return
     }
-    this._doStartRecord()
-  },
-
-  _doStartRecord() {
-    this._recorderStarted = false
-    this._pendingStop = false
-    recorderManager.start({
-      duration: 60000,
-      sampleRate: 16000,
-      numberOfChannels: 1,
-      encodeBitRate: 48000,
-      format: 'mp3',
-    })
-  },
-
-  // 松手停止录音
-  stopRecord() {
-    if (this._recorderStarted) {
-      // 录音已启动，直接停止
-      recorderManager.stop()
-    } else {
-      // 录音还没启动完成，标记待停止
-      this._pendingStop = true
-    }
-  },
-
-  // 处理录音文件：上传 → 语音识别 → AI 回复
-  async handleVoiceFile(filePath) {
-    this.setData({ loading: true })
-
-    try {
-      const cloudPath = `voice/${Date.now()}-${Math.random().toString(36).slice(2)}.mp3`
-      const uploadRes = await new Promise((resolve, reject) => {
-        wx.cloud.uploadFile({
-          cloudPath,
-          filePath,
-          success: resolve,
-          fail: reject,
-        })
-      })
-
-      const urlRes = await new Promise((resolve, reject) => {
-        wx.cloud.getTempFileURL({
-          fileList: [uploadRes.fileID],
-          success: resolve,
-          fail: reject,
-        })
-      })
-      const audioUrl = urlRes.fileList[0].tempFileURL
-
-      const data = await api.request({
-        url: '/api/chat/voice',
-        method: 'POST',
-        data: { audio_url: audioUrl },
-        timeout: 60000,
-      })
-
-      const userMsg = { role: 'user', content: data.text || '🎤 语音消息' }
-      const aiMsg = { role: 'ai', content: data.reply }
-      const updated = [...this.data.messages, userMsg, aiMsg]
-      this.setData({
-        messages: updated,
-        loading: false,
-        scrollId: `msg-${updated.length - 1}`,
-      })
-    } catch (err) {
-      console.error('语音处理失败', err)
-      const updated = [...this.data.messages, {
-        role: 'ai',
-        content: '语音识别失败，请重试或改用文字输入 😢',
-      }]
-      this.setData({
-        messages: updated,
-        loading: false,
-        scrollId: `msg-${updated.length - 1}`,
-      })
-    }
-  },
-
-  // 发送文字消息
-  async handleSend() {
-    const msg = this.data.inputValue.trim()
-    if (!msg || this.data.loading) return
-
-    const messages = [...this.data.messages, { role: 'user', content: msg }]
-    this.setData({
-      messages,
-      inputValue: '',
-      loading: true,
-      scrollId: `msg-${messages.length - 1}`,
-    })
-
-    try {
-      const data = await api.request({
-        url: '/api/chat',
-        method: 'POST',
-        data: { message: msg },
-        timeout: 30000,
-      })
-      const updated = [...this.data.messages, { role: 'ai', content: data.reply }]
-      this.setData({
-        messages: updated,
-        loading: false,
-        scrollId: `msg-${updated.length - 1}`,
-      })
-    } catch (err) {
-      console.error('AI 回复失败', err)
-      const updated = [...this.data.messages, {
-        role: 'ai',
-        content: '抱歉，我暂时无法回复，请稍后再试 😢',
-      }]
-      this.setData({
-        messages: updated,
-        loading: false,
-        scrollId: `msg-${updated.length - 1}`,
-      })
-    }
-  },
-
-  // 长按复制
-  handleCopy(e) {
-    const idx = e.currentTarget.dataset.idx
-    const msg = this.data.messages[idx]
-    wx.setClipboardData({
-      data: msg.content,
-      success() {
-        wx.showToast({ title: '已复制', icon: 'success' })
-      },
-    })
+    wx.navigateTo({ url: '/pages/chat/chat' })
   },
 })

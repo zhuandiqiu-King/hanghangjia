@@ -1,21 +1,30 @@
 <view class="tools-page">
   <view class="page-header">
-    <text class="header-title">🧰 工具箱</text>
-    <text class="header-desc">实用家庭生活工具</text>
+    <text class="header-title">工具箱</text>
+    <text class="header-desc">家庭生活好帮手</text>
   </view>
 
-  <view class="tools-grid">
-    <view
-      wx:for="{{tools}}"
-      wx:key="id"
-      class="tool-card {{item.active ? '' : 'tool-disabled'}}"
-      bindtap="handleTap"
-      data-id="{{item.id}}"
-    >
-      <view class="tool-icon">{{item.icon}}</view>
-      <text class="tool-name">{{item.name}}</text>
-      <text class="tool-desc">{{item.desc}}</text>
-      <view wx:if="{{!item.active}}" class="coming-badge">即将上线</view>
+  <view wx:for="{{categories}}" wx:key="id" class="category-card">
+    <view class="category-header">
+      <text class="category-icon">{{item.icon}}</text>
+      <text class="category-name">{{item.name}}</text>
+    </view>
+    <view class="tools-grid">
+      <view
+        wx:for="{{item.tools}}"
+        wx:for-item="tool"
+        wx:key="id"
+        class="tool-item {{tool.active ? '' : 'tool-disabled'}}"
+        bindtap="handleTap"
+        data-id="{{tool.id}}"
+      >
+        <view class="tool-icon-wrap">
+          <text class="tool-icon">{{tool.icon}}</text>
+          <view wx:if="{{!tool.active}}" class="coming-dot"></view>
+        </view>
+        <text class="tool-name">{{tool.name}}</text>
+        <text class="tool-desc">{{tool.desc}}</text>
+      </view>
     </view>
   </view>
 </view>

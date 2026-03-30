@@ -1,0 +1,38 @@
+<view class="container">
+  <view class="header">
+    <text class="header-title">⭐ 常买清单</text>
+    <view class="batch-btn" wx:if="{{selectedIds.length > 0}}" bindtap="handleBatchAdd">
+      加入清单 ({{selectedIds.length}})
+    </view>
+  </view>
+
+  <!-- 常买商品列表 -->
+  <view class="item-list" wx:if="{{frequentList.length > 0}}">
+    <view
+      class="item-row"
+      wx:for="{{frequentList}}"
+      wx:key="id"
+    >
+      <view class="item-left" bindtap="toggleSelect" data-id="{{item.id}}">
+        <view class="check-box {{item.selected ? 'selected' : ''}}">
+          <text wx:if="{{item.selected}}">✓</text>
+        </view>
+        <view class="item-info">
+          <text class="item-name">{{item.name}}</text>
+          <text class="item-count">买过 {{item.buy_count}} 次</text>
+        </view>
+      </view>
+      <view class="item-actions">
+        <view class="quick-add" catchtap="handleQuickAdd" data-id="{{item.id}}">+ 加入</view>
+        <view class="delete-btn" catchtap="handleDelete" data-id="{{item.id}}">✕</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty" wx:if="{{!loading && frequentList.length === 0}}">
+    <text class="empty-icon">⭐</text>
+    <text class="empty-title">暂无常买商品</text>
+    <text class="empty-text">勾选购买商品后会自动统计到这里</text>
+  </view>
+</view>

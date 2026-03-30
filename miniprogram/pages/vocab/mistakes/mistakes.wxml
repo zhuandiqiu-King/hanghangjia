@@ -1,0 +1,30 @@
+<view class="mistakes-page">
+  <view wx:if="{{mistakes.length}}" class="mistake-header">
+    <text class="mistake-title">共 {{mistakes.length}} 个错词</text>
+    <view class="retry-all-btn" bindtap="retryAll">
+      <text>全部重听</text>
+    </view>
+  </view>
+
+  <view wx:if="{{mistakes.length}}" class="mistake-list">
+    <view
+      wx:for="{{mistakes}}"
+      wx:key="id"
+      class="mistake-item"
+      bindlongpress="onLongPress"
+      data-id="{{item.id}}"
+      data-idx="{{index}}"
+    >
+      <view class="mistake-count-badge">{{item.wrong_count}}次</view>
+      <view class="mistake-content">
+        <text class="mistake-en">{{item.word.english}}</text>
+        <text class="mistake-cn">{{item.word.chinese}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view wx:else class="empty-state">
+    <text class="empty-icon">🎉</text>
+    <text class="empty-text">没有错题，真棒！</text>
+  </view>
+</view>

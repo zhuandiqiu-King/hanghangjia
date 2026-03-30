@@ -1,6 +1,15 @@
 <view class="profile-page">
-  <!-- 头像区域 -->
-  <view class="user-header">
+  <!-- 未登录状态 -->
+  <view wx:if="{{!loggedIn}}" class="guest-header">
+    <view class="header-deco"></view>
+    <view class="guest-avatar">👤</view>
+    <text class="guest-title">尚未登录</text>
+    <text class="guest-desc">登录后管理你的个人设置</text>
+    <view class="guest-login-btn" bindtap="goLogin">立即登录</view>
+  </view>
+
+  <!-- 已登录 - 头像区域 -->
+  <view wx:if="{{loggedIn}}" class="user-header">
     <view class="header-deco"></view>
     <view class="avatar-wrap">
       <button class="avatar-change-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
@@ -12,6 +21,7 @@
     <text class="user-tag">🏠 夯夯家成员</text>
   </view>
 
+  <block wx:if="{{loggedIn}}">
   <!-- AI 对话偏好 -->
   <view class="section">
     <view class="section-title">🎨 AI 对话偏好</view>
@@ -145,4 +155,16 @@
       <text class="item-label">退出登录</text>
     </view>
   </view>
+  </block>
+
+  <!-- 未登录时只显示关于 -->
+  <block wx:if="{{!loggedIn}}">
+  <view class="section">
+    <view class="setting-item" bindtap="handleAbout">
+      <view class="item-icon icon-about">📋</view>
+      <text class="item-label">关于我们</text>
+      <text class="arrow">›</text>
+    </view>
+  </view>
+  </block>
 </view>

@@ -1,0 +1,144 @@
+<view class="dictation-page">
+  <!-- 步骤 1：选择设置 -->
+  <view wx:if="{{step === 'setup'}}" class="step-setup">
+    <view class="setup-title">听写设置</view>
+
+    <!-- 方向选择 -->
+    <view class="setup-section">
+      <text class="setup-label">听写方向</text>
+      <view class="option-row">
+        <view
+          class="option-item {{direction === 'en2cn' ? 'option-active' : ''}}"
+          bindtap="setDirection" data-val="en2cn"
+        >
+          <text>听英写中</text>
+        </view>
+        <view
+          class="option-item {{direction === 'cn2en' ? 'option-active' : ''}}"
+          bindtap="setDirection" data-val="cn2en"
+        >
+          <text>听中写英</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 输入模式 -->
+    <view class="setup-section">
+      <text class="setup-label">作答方式</text>
+      <view class="option-row option-row-wrap">
+        <view
+          class="option-item {{mode === 'text' ? 'option-active' : ''}}"
+          bindtap="setMode" data-val="text"
+        >
+          <text>⌨️ 键盘</text>
+        </view>
+        <view
+          class="option-item {{mode === 'voice' ? 'option-active' : ''}}"
+          bindtap="setMode" data-val="voice"
+        >
+          <text>🎤 语音</text>
+        </view>
+        <view
+          class="option-item {{mode === 'photo' ? 'option-active' : ''}}"
+          bindtap="setMode" data-val="photo"
+        >
+          <text>📷 拍照批改</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 单词范围 -->
+    <view class="setup-section">
+      <text class="setup-label">单词范围</text>
+      <view class="option-row option-row-wrap">
+        <view
+          class="option-item {{range === 'all' ? 'option-active' : ''}}"
+          bindtap="setRange" data-val="all"
+        >
+          <text>全部 ({{totalWords}})</text>
+        </view>
+        <view
+          class="option-item {{range === 'random' ? 'option-active' : ''}}"
+          bindtap="setRange" data-val="random"
+        >
+          <text>随机抽取</text>
+        </view>
+        <view
+          wx:if="{{mistakeCount > 0}}"
+          class="option-item {{range === 'mistakes' ? 'option-active' : ''}}"
+          bindtap="setRange" data-val="mistakes"
+        >
+          <text>仅错题 ({{mistakeCount}})</text>
+        </view>
+      </view>
+      <view wx:if="{{range === 'random'}}" class="random-count">
+        <text>抽取数量：</text>
+        <input
+          class="count-input"
+          type="number"
+          value="{{randomCount}}"
+          bindinput="onCountInput"
+          placeholder="10"
+        />
+        <text class="count-unit">个</text>
+      </view>
+    </view>
+
+    <view class="start-btn" bindtap="startDictation">
+      <text>开始听写</text>
+    </view>
+  </view>
+
+  <!-- 步骤 2：听写进行中 -->
+  <view wx:if="{{step === 'doing'}}" class="step-doing">
+    <!-- 进度条 -->
+    <view class="progress-bar">
+      <view class="progress-fill" style="width: {{(currentIdx + 1) / words.length * 100}}%"></view>
+    </view>
+    <text class="progress-text">{{currentIdx + 1}} / {{words.length}}</text>
+
+    <!-- 题目区 -->
+    <view class="question-card">
+      <text class="question-label">{{direction === 'en2cn' ? '请听英文写中文' : '请听中文写英文'}}</text>
+      <view class="play-btn" bindtap="playWord">
+        <text class="play-icon">🔊</text>
+        <text class="play-text">点击播放</text>
+      </view>
+    </view>
+
+    <!-- 文本输入模式 -->
+    <view wx:if="{{mode === 'text'}}" class="answer-area">
+      <input
+        class="answer-input"
+        placeholder="{{direction === 'en2cn' ? '输入中文...' : 'Type English...'}}"
+        value="{{currentAnswer}}"
+        bindinput="onAnswerInput"
+        confirm-type="next"
+        bindconfirm="nextWord"
+        focus="{{inputFocus}}"
+      />
+      <view class="next-btn" bindtap="nextWord">
+        <text>{{currentIdx < words.length - 1 ? '下一个 ›' : '完成 ✓'}}</text>
+      </view>
+    </view>
+
+    <!-- 语音输入模式 -->
+    <view wx:if="{{mode === 'voice'}}" class="answer-area">
+      <view class="voice-answer-display">
+        <text wx:if="{{currentAnswer}}" class="voice-answer-text">{{currentAnswer}}</text>
+        <text wx:else class="voice-answer-placeholder">等待语音输入...</text>
+      </view>
+      <view
+        class="voice-record-btn {{recording ? 'voice-recording' : ''}}"
+        bindtouchstart="startVoiceInput"
+        bindtouchend="stopVoiceInput"
+        bindtouchcancel="stopVoiceInput"
+      >
+        <text>{{recording ? '🔴 松开识别' : '🎙️ 按住说答案'}}</text>
+      </view>
+      <view class="voice-skip-btn" bindtap="nextWord">
+        <text>{{currentIdx < words.length - 1 ? '跳过 ›' : '完成 ✓'}}</text>
+      </view>
+    </view>
+  </view>
+</view>

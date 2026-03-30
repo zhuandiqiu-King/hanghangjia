@@ -1,0 +1,41 @@
+<view class="stepmode-page" wx:if="{{recipe}}" bindtouchstart="onTouchStart" bindtouchend="onTouchEnd">
+  <!-- 顶部栏 -->
+  <view class="top-bar">
+    <text class="recipe-name">{{recipe.name}}</text>
+    <text class="step-indicator">步骤 {{currentStep + 1}}/{{totalSteps}}</text>
+    <view class="close-btn" bindtap="exitStepMode">
+      <text>✕</text>
+    </view>
+  </view>
+
+  <!-- 步骤内容 -->
+  <view class="step-main" wx:if="{{steps.length > 0}}">
+    <text class="step-content">{{steps[currentStep].content}}</text>
+    <view wx:if="{{steps[currentStep].tip}}" class="step-tip-box">
+      <text class="tip-text">💡 {{steps[currentStep].tip}}</text>
+    </view>
+  </view>
+
+  <!-- 底部导航 -->
+  <view class="bottom-nav">
+    <view
+      class="nav-btn prev {{currentStep === 0 ? 'disabled' : ''}}"
+      bindtap="prevStep"
+    >
+      ← 上一步
+    </view>
+
+    <!-- 进度点 -->
+    <view class="progress-dots">
+      <view
+        wx:for="{{steps}}"
+        wx:key="id"
+        class="dot {{currentStep === index ? 'active' : ''}}"
+      ></view>
+    </view>
+
+    <view class="nav-btn next" bindtap="nextStep">
+      {{currentStep === totalSteps - 1 ? '✓ 完成' : '下一步 →'}}
+    </view>
+  </view>
+</view>

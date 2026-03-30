@@ -1,0 +1,64 @@
+<view class="import-page">
+  <!-- 步骤 1：拍照 -->
+  <view wx:if="{{step === 'photo'}}" class="step-photo">
+    <view class="photo-tip">
+      <text class="tip-title">拍摄单词表</text>
+      <text class="tip-desc">拍照或从相册选取包含英文和中文的单词列表</text>
+    </view>
+
+    <view wx:if="{{imageSrc}}" class="preview-wrap">
+      <image class="preview-img" src="{{imageSrc}}" mode="widthFix" />
+      <view class="preview-actions">
+        <view class="btn-secondary" bindtap="chooseImage">重新选择</view>
+        <view class="btn-primary" bindtap="startRecognize">开始识别</view>
+      </view>
+    </view>
+
+    <view wx:else class="upload-area" bindtap="chooseImage">
+      <text class="upload-icon">📷</text>
+      <text class="upload-text">点击拍照或选择图片</text>
+    </view>
+  </view>
+
+  <!-- 步骤 2：识别中 -->
+  <view wx:if="{{step === 'loading'}}" class="step-loading">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">正在识别单词...</text>
+  </view>
+
+  <!-- 步骤 3：确认结果 -->
+  <view wx:if="{{step === 'confirm'}}" class="step-confirm">
+    <view class="confirm-header">
+      <text class="confirm-title">识别到 {{words.length}} 个单词</text>
+      <text class="confirm-desc">请检查并修正识别结果，然后保存</text>
+    </view>
+
+    <view class="word-edit-list">
+      <view wx:for="{{words}}" wx:key="idx" class="word-edit-item">
+        <view class="word-edit-num">{{index + 1}}</view>
+        <view class="word-edit-fields">
+          <input
+            class="edit-input"
+            value="{{item.english}}"
+            bindinput="onEditEn"
+            data-idx="{{index}}"
+            placeholder="英文"
+          />
+          <input
+            class="edit-input"
+            value="{{item.chinese}}"
+            bindinput="onEditCn"
+            data-idx="{{index}}"
+            placeholder="中文"
+          />
+        </view>
+        <view class="word-edit-del" bindtap="removeWord" data-idx="{{index}}">✕</view>
+      </view>
+    </view>
+
+    <view class="confirm-actions">
+      <view class="btn-secondary" bindtap="reChoose">重新拍照</view>
+      <view class="btn-primary" bindtap="saveWords">保存 ({{words.length}})</view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,149 @@
+.container {
+  padding: 24rpx;
+  background: #F5F0EB;
+  min-height: 100vh;
+}
+
+.header {
+  padding: 20rpx 0 24rpx;
+}
+
+.header-title {
+  font-size: 44rpx;
+  font-weight: bold;
+  color: #2C3E50;
+}
+
+.history-card {
+  background: #fff;
+  border-radius: 20rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 28rpx;
+}
+
+.card-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.card-date {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #2C3E50;
+}
+
+.card-count {
+  font-size: 24rpx;
+  color: #95A5A6;
+  margin-top: 4rpx;
+}
+
+.card-right {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.card-price {
+  font-size: 28rpx;
+  color: #E67E22;
+  font-weight: 500;
+}
+
+.card-arrow {
+  font-size: 32rpx;
+  color: #BDC3C7;
+  transition: transform 0.2s;
+}
+
+.card-arrow.expanded {
+  transform: rotate(90deg);
+}
+
+.card-detail {
+  padding: 0 28rpx 28rpx;
+  border-top: 1rpx solid #F0F0F0;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #F8F8F8;
+}
+
+.detail-item:last-child {
+  border-bottom: none;
+}
+
+.detail-name {
+  font-size: 28rpx;
+  color: #2C3E50;
+}
+
+.detail-right {
+  display: flex;
+  gap: 16rpx;
+  align-items: center;
+}
+
+.detail-quantity {
+  font-size: 24rpx;
+  color: #95A5A6;
+}
+
+.detail-buyer {
+  font-size: 22rpx;
+  color: #3498DB;
+  background: rgba(52, 152, 219, 0.1);
+  padding: 4rpx 12rpx;
+  border-radius: 12rpx;
+}
+
+.rebuy-btn {
+  margin-top: 20rpx;
+  text-align: center;
+  padding: 16rpx;
+  background: rgba(46, 204, 113, 0.1);
+  color: #2ECC71;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  font-weight: 500;
+}
+
+.rebuy-btn:active {
+  opacity: 0.7;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 200rpx;
+}
+
+.empty-icon {
+  font-size: 120rpx;
+  margin-bottom: 20rpx;
+}
+
+.empty-title {
+  font-size: 34rpx;
+  font-weight: bold;
+  color: #2C3E50;
+  margin-bottom: 12rpx;
+}
+
+.empty-text {
+  font-size: 26rpx;
+  color: #95A5A6;
+}

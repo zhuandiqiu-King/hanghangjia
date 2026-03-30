@@ -3,6 +3,7 @@
     "pages/home/home",
     "pages/tools/tools",
     "pages/profile/profile",
+    "pages/chat/chat",
     "pages/login/login",
     "pages/plant/index/index",
     "pages/plant/add/add",
@@ -11,7 +12,21 @@
     "pages/plant/watering/watering",
     "pages/family/index/index",
     "pages/family/detail/detail",
-    "pages/family/join/join"
+    "pages/family/join/join",
+    "pages/vocab/index/index",
+    "pages/vocab/wordbook/wordbook",
+    "pages/vocab/import/import",
+    "pages/vocab/dictation/dictation",
+    "pages/vocab/result/result",
+    "pages/vocab/mistakes/mistakes",
+    "pages/vocab/photo-check/photo-check",
+    "pages/shopping/index/index",
+    "pages/shopping/history/history",
+    "pages/shopping/frequent/frequent",
+    "pages/cooking/index/index",
+    "pages/cooking/detail/detail",
+    "pages/cooking/stepmode/stepmode",
+    "pages/cooking/favorites/favorites"
   ],
   "window": {
     "navigationBarBackgroundColor": "#FFFFFF",
@@ -26,16 +41,16 @@
     "borderStyle": "white",
     "list": [
       {
-        "pagePath": "pages/tools/tools",
-        "text": "工具箱",
-        "iconPath": "images/tab-tools.png",
-        "selectedIconPath": "images/tab-tools-active.png"
-      },
-      {
         "pagePath": "pages/home/home",
         "text": "首页",
         "iconPath": "images/tab-home.png",
         "selectedIconPath": "images/tab-home-active.png"
+      },
+      {
+        "pagePath": "pages/tools/tools",
+        "text": "工具箱",
+        "iconPath": "images/tab-tools.png",
+        "selectedIconPath": "images/tab-tools-active.png"
       },
       {
         "pagePath": "pages/profile/profile",

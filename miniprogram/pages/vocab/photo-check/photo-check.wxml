@@ -1,0 +1,85 @@
+<view class="photo-check-page">
+  <!-- 步骤 1：播报单词 -->
+  <view wx:if="{{step === 'play'}}" class="step-play">
+    <view class="play-card">
+      <text class="play-title">正在播报单词</text>
+      <text class="play-progress">{{playIdx + 1}} / {{words.length}}</text>
+      <view class="play-current">
+        <text class="play-word">🔊 第 {{playIdx + 1}} 个</text>
+      </view>
+      <text class="play-hint">请在纸上写下答案</text>
+    </view>
+    <view class="play-actions">
+      <view class="btn-secondary" bindtap="replayAll">重新播报</view>
+      <view class="btn-primary" bindtap="finishPlay">播报完毕，去拍照</view>
+    </view>
+  </view>
+
+  <!-- 步骤 2：拍照 -->
+  <view wx:if="{{step === 'photo'}}" class="step-photo">
+    <view class="photo-tip">
+      <text class="tip-title">拍摄你的答案</text>
+      <text class="tip-desc">将纸上写的内容拍照上传，AI 会自动批改</text>
+    </view>
+
+    <view wx:if="{{imageSrc}}" class="preview-wrap">
+      <image class="preview-img" src="{{imageSrc}}" mode="widthFix" />
+      <view class="preview-actions">
+        <view class="btn-secondary" bindtap="chooseImage">重新拍照</view>
+        <view class="btn-primary" bindtap="startCheck">开始批改</view>
+      </view>
+    </view>
+
+    <view wx:else class="upload-area" bindtap="chooseImage">
+      <text class="upload-icon">📷</text>
+      <text class="upload-text">点击拍照</text>
+    </view>
+  </view>
+
+  <!-- 步骤 3：批改中 -->
+  <view wx:if="{{step === 'checking'}}" class="step-loading">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">AI 正在批改...</text>
+  </view>
+
+  <!-- 步骤 4：批改结果 -->
+  <view wx:if="{{step === 'result'}}" class="step-result">
+    <!-- 分数 -->
+    <view class="score-bar">
+      <text class="score-text">{{correct}} / {{total}} 正确</text>
+      <text class="score-hint">点击可修改批改结果</text>
+    </view>
+
+    <!-- 逐词结果 -->
+    <view class="check-list">
+      <view
+        wx:for="{{results}}"
+        wx:key="word_id"
+        class="check-item {{item.is_correct ? 'check-correct' : 'check-wrong'}}"
+      >
+        <view class="check-status" bindtap="toggleCorrect" data-idx="{{index}}">
+          {{item.is_correct ? '✓' : '✗'}}
+        </view>
+        <view class="check-content">
+          <text class="check-word">{{item.english}}</text>
+          <text class="check-meaning">{{item.chinese}}</text>
+          <view class="check-answer-row">
+            <text class="check-label">识别：</text>
+            <input
+              class="check-answer-input"
+              value="{{item.user_answer}}"
+              bindinput="onEditAnswer"
+              data-idx="{{index}}"
+            />
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 提交 -->
+    <view class="result-actions">
+      <view class="btn-secondary" bindtap="rePhoto">重新拍照</view>
+      <view class="btn-primary" bindtap="submitResults">确认提交</view>
+    </view>
+  </view>
+</view>

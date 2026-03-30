@@ -4,6 +4,49 @@
   padding-bottom: 40rpx;
 }
 
+/* 未登录状态 */
+.guest-header {
+  background: #fff;
+  padding: 80rpx 0 48rpx;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.guest-avatar {
+  font-size: 100rpx;
+  margin-bottom: 16rpx;
+}
+
+.guest-title {
+  display: block;
+  font-size: 34rpx;
+  font-weight: bold;
+  color: #2C3E50;
+  margin-bottom: 8rpx;
+}
+
+.guest-desc {
+  display: block;
+  font-size: 24rpx;
+  color: #95A5A6;
+  margin-bottom: 32rpx;
+}
+
+.guest-login-btn {
+  display: inline-block;
+  padding: 16rpx 80rpx;
+  background: #2ECC71;
+  color: #fff;
+  font-size: 30rpx;
+  font-weight: 500;
+  border-radius: 40rpx;
+}
+
+.guest-login-btn:active {
+  opacity: 0.85;
+}
+
 /* 头像区域 */
 .user-header {
   background: #fff;

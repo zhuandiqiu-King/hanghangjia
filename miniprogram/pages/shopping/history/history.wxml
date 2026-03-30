@@ -1,0 +1,38 @@
+<view class="container">
+  <view class="header">
+    <text class="header-title">📋 历史记录</text>
+  </view>
+
+  <!-- 历史清单列表 -->
+  <view wx:for="{{historyList}}" wx:key="id" class="history-card">
+    <view class="card-header" bindtap="toggleCard" data-id="{{item.id}}">
+      <view class="card-left">
+        <text class="card-date">{{item.dateStr}}</text>
+        <text class="card-count">{{item.item_count}} 件商品</text>
+      </view>
+      <view class="card-right">
+        <text class="card-price" wx:if="{{item.total_price}}">¥{{item.total_price}}</text>
+        <text class="card-arrow {{item.expanded ? 'expanded' : ''}}">›</text>
+      </view>
+    </view>
+
+    <!-- 展开详情 -->
+    <view wx:if="{{item.expanded}}" class="card-detail">
+      <view class="detail-item" wx:for="{{item.items}}" wx:for-item="goods" wx:key="id">
+        <text class="detail-name">{{goods.name}}</text>
+        <view class="detail-right">
+          <text class="detail-quantity" wx:if="{{goods.quantity}}">{{goods.quantity}}</text>
+          <text class="detail-buyer" wx:if="{{goods.buyer_name}}">{{goods.buyer_name}}</text>
+        </view>
+      </view>
+      <view class="rebuy-btn" bindtap="handleRebuy" data-id="{{item.id}}">🔄 一键重买</view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty" wx:if="{{!loading && historyList.length === 0}}">
+    <text class="empty-icon">📭</text>
+    <text class="empty-title">暂无历史记录</text>
+    <text class="empty-text">清空已买商品后会自动归档到这里</text>
+  </view>
+</view>

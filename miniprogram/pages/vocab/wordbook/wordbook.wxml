@@ -1,0 +1,80 @@
+<view class="wordbook-page">
+  <!-- 顶部信息 -->
+  <view class="book-header">
+    <text class="book-title">{{bookName}}</text>
+    <text class="book-stat">共 {{words.length}} 个单词</text>
+  </view>
+
+  <!-- 操作按钮区 -->
+  <view class="action-row">
+    <view class="action-btn action-primary" bindtap="startDictation">
+      <text class="action-icon">🎧</text>
+      <text>开始听写</text>
+    </view>
+    <view class="action-btn" bindtap="goToMistakes">
+      <text class="action-icon">📝</text>
+      <text>错题本</text>
+    </view>
+    <view class="action-btn" bindtap="goToImport">
+      <text class="action-icon">📷</text>
+      <text>拍照录入</text>
+    </view>
+    <view class="action-btn" bindtap="showAddWord">
+      <text class="action-icon">➕</text>
+      <text>手动添加</text>
+    </view>
+  </view>
+
+  <!-- 单词列表 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">单词列表</text>
+    </view>
+
+    <view wx:if="{{words.length}}" class="word-list">
+      <view
+        wx:for="{{words}}"
+        wx:key="id"
+        class="word-item"
+        bindlongpress="onWordLongPress"
+        data-id="{{item.id}}"
+        data-idx="{{index}}"
+      >
+        <view class="word-index">{{index + 1}}</view>
+        <view class="word-content">
+          <text class="word-en">{{item.english}}</text>
+          <text wx:if="{{item.phonetic}}" class="word-phonetic">{{item.phonetic}}</text>
+          <text class="word-cn">{{item.chinese}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view wx:else class="empty-state">
+      <text class="empty-icon">📖</text>
+      <text class="empty-text">还没有单词，点击上方添加</text>
+    </view>
+  </view>
+
+  <!-- 添加单词弹窗 -->
+  <view wx:if="{{showAddModal}}" class="modal-mask" bindtap="hideAddModal">
+    <view class="modal-box" catchtap="">
+      <text class="modal-title">添加单词</text>
+      <view class="modal-field">
+        <text class="field-label">英文</text>
+        <input class="field-input" placeholder="apple" value="{{newEnglish}}" bindinput="onInputEn" />
+      </view>
+      <view class="modal-field">
+        <text class="field-label">中文</text>
+        <input class="field-input" placeholder="苹果" value="{{newChinese}}" bindinput="onInputCn" />
+      </view>
+      <view class="modal-field">
+        <text class="field-label">音标(选填)</text>
+        <input class="field-input" placeholder="/ˈæp.əl/" value="{{newPhonetic}}" bindinput="onInputPh" />
+      </view>
+      <view class="modal-actions">
+        <view class="modal-btn modal-cancel" bindtap="hideAddModal">取消</view>
+        <view class="modal-btn modal-confirm" bindtap="addWord">确认</view>
+      </view>
+    </view>
+  </view>
+</view>

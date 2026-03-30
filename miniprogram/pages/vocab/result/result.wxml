@@ -1,0 +1,35 @@
+<view class="result-page">
+  <!-- 分数卡片 -->
+  <view class="score-card">
+    <view class="score-circle">
+      <text class="score-num">{{correct}}</text>
+      <text class="score-total">/{{total}}</text>
+    </view>
+    <text class="score-label">{{accuracy}}% 正确率</text>
+    <text class="score-msg">{{scoreMsg}}</text>
+  </view>
+
+  <!-- 结果列表 -->
+  <view class="result-list">
+    <view
+      wx:for="{{results}}"
+      wx:key="word_id"
+      class="result-item {{item.is_correct ? 'result-correct' : 'result-wrong'}}"
+    >
+      <view class="result-status">{{item.is_correct ? '✓' : '✗'}}</view>
+      <view class="result-content">
+        <text class="result-word">{{item.english}}</text>
+        <text class="result-meaning">{{item.chinese}}</text>
+        <view wx:if="{{!item.is_correct && item.answer}}" class="result-answer">
+          <text>你的答案：{{item.answer}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="result-actions">
+    <view class="btn-secondary" bindtap="goBack">返回单词本</view>
+    <view class="btn-primary" bindtap="retryWrong" wx:if="{{wrongCount > 0}}">重做错题 ({{wrongCount}})</view>
+  </view>
+</view>

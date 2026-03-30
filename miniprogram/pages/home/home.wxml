@@ -1,97 +1,102 @@
-<view class="chat-page">
-  <!-- 消息列表 -->
-  <scroll-view
-    class="message-list"
-    scroll-y
-    scroll-into-view="{{scrollId}}"
-    scroll-with-animation
-  >
-    <view
-      wx:for="{{messages}}"
-      wx:key="index"
-      id="msg-{{index}}"
-      class="message-row {{item.role === 'user' ? 'msg-right' : 'msg-left'}}"
-      bindlongpress="handleCopy"
-      data-idx="{{index}}"
-    >
-      <!-- AI 头像 -->
-      <view wx:if="{{item.role === 'ai'}}" class="avatar avatar-ai">🌱</view>
+<view class="dashboard-page">
+  <!-- 顶部欢迎区 -->
+  <view class="welcome-section">
+    <view class="welcome-left">
+      <text class="welcome-hi">Hi，{{loggedIn ? (nickname || '主人') : '欢迎来到夯夯家'}}</text>
+      <text class="welcome-date">{{dateText}}</text>
+    </view>
+    <view class="welcome-right">
+      <text wx:if="{{loggedIn}}" class="family-tag">{{familyName || '我的家'}}</text>
+      <text wx:else class="family-tag login-tag" bindtap="goLogin">点击登录</text>
+    </view>
+  </view>
 
-      <!-- 浇水任务卡片 -->
-      <view wx:if="{{item.type === 'watering_card'}}" class="watering-card" bindtap="goToWatering">
-        <view class="watering-card-header">
-          <text class="watering-card-icon">💧</text>
-          <text class="watering-card-title">今日有 {{item.count}} 棵植物需要浇水</text>
-        </view>
-        <view class="watering-card-names">
-          <text wx:for="{{item.names}}" wx:for-item="name" wx:key="*this" class="plant-name-tag">{{name}}</text>
-          <text wx:if="{{item.totalCount > 5}}" class="plant-name-tag more-tag">+{{item.totalCount - 5}}</text>
-        </view>
-        <view class="watering-card-action">
-          <text class="watering-action-text">去浇水 ›</text>
-        </view>
-      </view>
+  <!-- 未登录提示 -->
+  <view wx:if="{{!loggedIn}}" class="section">
+    <view class="guest-card" bindtap="goLogin">
+      <text class="guest-icon">👋</text>
+      <text class="guest-title">登录后解锁全部功能</text>
+      <text class="guest-desc">管理家庭任务、浇水提醒、购物清单等</text>
+    </view>
+  </view>
 
-      <!-- 普通消息气泡 -->
-      <view wx:elif="{{!item.type}}" class="bubble {{item.role === 'user' ? 'bubble-user' : 'bubble-ai'}}">
-        <text>{{item.content}}</text>
-      </view>
-
-      <!-- 用户头像 -->
-      <view wx:if="{{item.role === 'user'}}" class="avatar avatar-user">😊</view>
+  <!-- 今日任务（登录后显示） -->
+  <view wx:if="{{loggedIn}}" class="section">
+    <view class="section-header">
+      <text class="section-title">今日任务</text>
+      <text class="section-count">{{todayTasks.length}} 项</text>
     </view>
 
-    <!-- 加载动画 -->
-    <view wx:if="{{loading}}" class="message-row msg-left">
-      <view class="avatar avatar-ai">🌱</view>
-      <view class="bubble bubble-ai loading-bubble">
-        <view class="dot-loading">
-          <view class="dot"></view>
-          <view class="dot"></view>
-          <view class="dot"></view>
-        </view>
-      </view>
-    </view>
-
-    <!-- 底部留白 -->
-    <view class="scroll-bottom"></view>
-  </scroll-view>
-
-  <!-- 底部输入栏 -->
-  <view class="input-bar">
-    <!-- 语音/键盘切换按钮 -->
-    <view class="voice-toggle" bindtap="toggleVoice">
-      <text>{{voiceMode ? '⌨️' : '🎤'}}</text>
-    </view>
-
-    <!-- 文字输入模式 -->
-    <block wx:if="{{!voiceMode}}">
-      <input
-        class="msg-input"
-        placeholder="和夯夯聊聊..."
-        value="{{inputValue}}"
-        bindinput="onInput"
-        confirm-type="send"
-        bindconfirm="handleSend"
-        disabled="{{loading}}"
-      />
+    <view wx:if="{{todayTasks.length}}" class="task-list">
       <view
-        class="send-btn {{inputValue.trim() && !loading ? 'send-active' : ''}}"
-        bindtap="handleSend"
+        wx:for="{{todayTasks}}"
+        wx:key="id"
+        class="task-item {{item.done ? 'task-done' : ''}}"
+        bindtap="toggleTask"
+        data-idx="{{index}}"
       >
-        <text class="send-icon">➤</text>
+        <view class="task-check">{{item.done ? '✅' : '⬜'}}</view>
+        <view class="task-info">
+          <text class="task-icon">{{item.icon}}</text>
+          <text class="task-name">{{item.name}}</text>
+        </view>
       </view>
-    </block>
-
-    <!-- 语音输入模式 -->
-    <view
-      wx:else
-      class="voice-btn {{recording ? 'voice-btn-active' : ''}}"
-      bindtouchstart="startRecord"
-      bindtouchend="stopRecord"
-      bindtouchcancel="stopRecord"
-    >
-      <text>{{recording ? '🔴 松开结束' : '🎙️ 按住说话'}}</text>
     </view>
+
+    <view wx:else class="empty-state">
+      <text class="empty-icon">🎉</text>
+      <text class="empty-text">今天没有待办任务</text>
+    </view>
+  </view>
+
+  <!-- 本周概览（登录后显示） -->
+  <view wx:if="{{loggedIn}}" class="section">
+    <view class="section-header">
+      <text class="section-title">本周概览</text>
+    </view>
+    <view class="stats-row">
+      <view class="stat-card">
+        <text class="stat-num">{{weekDone}}</text>
+        <text class="stat-label">已完成</text>
+      </view>
+      <view class="stat-card">
+        <text class="stat-num">{{weekPending}}</text>
+        <text class="stat-label">待完成</text>
+      </view>
+      <view class="stat-card">
+        <text class="stat-num">{{familyMembers}}</text>
+        <text class="stat-label">家庭成员</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 快捷入口 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">快捷入口</text>
+    </view>
+    <view class="shortcut-row">
+      <view class="shortcut-item" bindtap="goTo" data-url="/pages/plant/watering/watering">
+        <view class="shortcut-icon">💧</view>
+        <text class="shortcut-name">浇水</text>
+      </view>
+      <view class="shortcut-item" bindtap="goTo" data-url="/pages/tools/tools">
+        <view class="shortcut-icon">📋</view>
+        <text class="shortcut-name">购物清单</text>
+      </view>
+      <view class="shortcut-item" bindtap="goTo" data-url="/pages/tools/tools">
+        <view class="shortcut-icon">📖</view>
+        <text class="shortcut-name">学习计划</text>
+      </view>
+      <view class="shortcut-item" bindtap="goTo" data-url="/pages/tools/tools">
+        <view class="shortcut-icon">🍳</view>
+        <text class="shortcut-name">烹饪</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- AI 悬浮按钮 -->
+  <view class="ai-fab" bindtap="goToChat">
+    <text class="ai-fab-icon">💬</text>
   </view>
 </view>

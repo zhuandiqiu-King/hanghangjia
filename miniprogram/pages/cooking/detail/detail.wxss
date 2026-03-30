@@ -1,0 +1,281 @@
+.detail-page {
+  background: #F5F0EB;
+  min-height: 100vh;
+  padding-bottom: 140rpx;
+}
+
+/* 封面 */
+.cover-section {
+  width: 100%;
+  height: 400rpx;
+  background: #E8F8F0;
+}
+.cover-img {
+  width: 100%;
+  height: 100%;
+}
+.cover-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #E8F8F0, #D4EFDF);
+}
+.placeholder-icon {
+  font-size: 120rpx;
+}
+
+/* 基本信息 */
+.info-section {
+  background: #fff;
+  padding: 24rpx;
+  margin: -40rpx 24rpx 0;
+  border-radius: 20rpx;
+  position: relative;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.06);
+}
+.title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.recipe-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #2C3E50;
+}
+.fav-btn {
+  font-size: 26rpx;
+  color: #95A5A6;
+}
+.meta-row {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 16rpx;
+}
+.meta-item {
+  font-size: 24rpx;
+  color: #7F8C8D;
+}
+.tag-row {
+  margin-top: 12rpx;
+}
+.tag {
+  display: inline-block;
+  font-size: 22rpx;
+  color: #2ECC71;
+  background: #E8F8F0;
+  padding: 4rpx 16rpx;
+  border-radius: 8rpx;
+}
+.desc {
+  margin-top: 16rpx;
+  font-size: 26rpx;
+  color: #7F8C8D;
+  line-height: 1.6;
+}
+
+/* 通用 section */
+.section {
+  background: #fff;
+  margin: 20rpx 24rpx;
+  padding: 24rpx;
+  border-radius: 20rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.06);
+}
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+.section-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #2C3E50;
+  display: block;
+  margin-bottom: 16rpx;
+}
+.section-header .section-title {
+  margin-bottom: 0;
+}
+.section-action {
+  font-size: 24rpx;
+  color: #3498DB;
+}
+
+/* 食材 */
+.ingredient-group {
+  margin-bottom: 16rpx;
+}
+.group-label {
+  font-size: 24rpx;
+  color: #95A5A6;
+  display: block;
+  margin-bottom: 8rpx;
+}
+.ingredient-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12rpx 0;
+  border-bottom: 1rpx solid #F5F0EB;
+}
+.ing-name {
+  font-size: 28rpx;
+  color: #2C3E50;
+}
+.ing-amount {
+  font-size: 28rpx;
+  color: #95A5A6;
+}
+
+/* 步骤 */
+.step-item {
+  display: flex;
+  margin-bottom: 24rpx;
+}
+.step-number {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  background: #2ECC71;
+  color: #fff;
+  font-size: 24rpx;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: 16rpx;
+  margin-top: 4rpx;
+}
+.step-content {
+  flex: 1;
+}
+.step-text {
+  font-size: 28rpx;
+  color: #2C3E50;
+  line-height: 1.6;
+  display: block;
+}
+.step-tip {
+  font-size: 24rpx;
+  color: #E67E22;
+  margin-top: 8rpx;
+  display: block;
+}
+
+/* 小贴士 */
+.tips-box {
+  background: #FFF8E1;
+  padding: 16rpx 20rpx;
+  border-radius: 12rpx;
+  font-size: 26rpx;
+  color: #E67E22;
+  line-height: 1.6;
+}
+
+/* 底部按钮 */
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20rpx 24rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  background: #fff;
+  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.06);
+}
+.btn-start {
+  background: linear-gradient(135deg, #2ECC71, #27AE60);
+  color: #fff;
+  text-align: center;
+  padding: 24rpx 0;
+  border-radius: 16rpx;
+  font-size: 32rpx;
+  font-weight: bold;
+}
+
+/* 购物弹窗 */
+.modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+.modal-content {
+  width: 85%;
+  max-height: 70vh;
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 32rpx;
+}
+.modal-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #2C3E50;
+  display: block;
+  margin-bottom: 20rpx;
+}
+.modal-list {
+  max-height: 50vh;
+}
+.shopping-check-item {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #F5F0EB;
+}
+.check-circle {
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: 50%;
+  border: 2rpx solid #BDC3C7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16rpx;
+  font-size: 24rpx;
+  color: #fff;
+  flex-shrink: 0;
+}
+.check-circle.checked {
+  background: #2ECC71;
+  border-color: #2ECC71;
+}
+.check-name {
+  flex: 1;
+  font-size: 28rpx;
+  color: #2C3E50;
+}
+.check-amount {
+  font-size: 24rpx;
+  color: #95A5A6;
+}
+.modal-actions {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 24rpx;
+}
+.modal-btn {
+  flex: 1;
+  text-align: center;
+  padding: 20rpx 0;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+}
+.modal-btn.cancel {
+  background: #F5F0EB;
+  color: #7F8C8D;
+}
+.modal-btn.confirm {
+  background: #2ECC71;
+  color: #fff;
+}

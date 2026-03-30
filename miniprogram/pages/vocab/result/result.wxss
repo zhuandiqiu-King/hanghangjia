@@ -1,0 +1,142 @@
+.result-page {
+  min-height: 100vh;
+  background: #F5F0EB;
+  padding: 0 28rpx 40rpx;
+}
+
+/* 分数卡片 */
+.score-card {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 48rpx 32rpx;
+  text-align: center;
+  margin-top: 24rpx;
+  margin-bottom: 28rpx;
+  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.06);
+}
+
+.score-circle {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  margin-bottom: 12rpx;
+}
+
+.score-num {
+  font-size: 72rpx;
+  font-weight: bold;
+  color: #2ECC71;
+}
+
+.score-total {
+  font-size: 36rpx;
+  color: #95A5A6;
+  margin-left: 4rpx;
+}
+
+.score-label {
+  display: block;
+  font-size: 28rpx;
+  color: #2C3E50;
+  font-weight: 500;
+}
+
+.score-msg {
+  display: block;
+  font-size: 24rpx;
+  color: #95A5A6;
+  margin-top: 8rpx;
+}
+
+/* 结果列表 */
+.result-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+  margin-bottom: 28rpx;
+}
+
+.result-item {
+  display: flex;
+  align-items: flex-start;
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 20rpx 24rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+.result-status {
+  width: 48rpx;
+  height: 48rpx;
+  line-height: 48rpx;
+  text-align: center;
+  border-radius: 50%;
+  font-size: 28rpx;
+  font-weight: bold;
+  flex-shrink: 0;
+  margin-right: 16rpx;
+}
+
+.result-correct .result-status {
+  background: #E8F8F0;
+  color: #2ECC71;
+}
+
+.result-wrong .result-status {
+  background: #FDEDEE;
+  color: #E74C3C;
+}
+
+.result-content {
+  flex: 1;
+}
+
+.result-word {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 500;
+  color: #2C3E50;
+}
+
+.result-meaning {
+  display: block;
+  font-size: 24rpx;
+  color: #7F8C8D;
+  margin-top: 4rpx;
+}
+
+.result-answer {
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: #E74C3C;
+}
+
+/* 操作按钮 */
+.result-actions {
+  display: flex;
+  gap: 20rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+}
+
+.btn-primary,
+.btn-secondary {
+  flex: 1;
+  height: 88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  border-radius: 20rpx;
+  font-size: 30rpx;
+  font-weight: 500;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #2ECC71, #27AE60);
+  color: #fff;
+  box-shadow: 0 4rpx 16rpx rgba(46, 204, 113, 0.3);
+}
+
+.btn-secondary {
+  background: #fff;
+  color: #2C3E50;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+}

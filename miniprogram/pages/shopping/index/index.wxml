@@ -1,0 +1,157 @@
+<view class="container">
+  <!-- 顶部 -->
+  <view class="header">
+    <text class="header-title">🛒 购物清单</text>
+    <text class="header-action" bindtap="handleCopyList" wx:if="{{unboughtItems.length > 0}}">📋 复制</text>
+  </view>
+
+  <!-- 快速添加 -->
+  <view class="input-bar">
+    <input
+      class="input-field"
+      placeholder="输入商品名，多个用逗号分隔"
+      value="{{inputValue}}"
+      bindinput="onInput"
+      bindconfirm="handleQuickAdd"
+      confirm-type="done"
+    />
+    <view class="ai-btn" bindtap="handleSmartAdd">AI</view>
+    <view class="detail-add-btn" bindtap="openAddModal">✎</view>
+    <view class="add-btn" bindtap="handleQuickAdd">+</view>
+  </view>
+
+  <!-- 待买区域 -->
+  <view wx:if="{{unboughtItems.length > 0}}">
+    <view class="section-header">
+      <text class="section-title">待买 ({{unboughtItems.length}})</text>
+    </view>
+
+    <!-- 按分类分组展示 -->
+    <block wx:for="{{categoryGroups}}" wx:key="key">
+      <view class="category-group" wx:if="{{item.items.length > 0}}">
+        <view class="category-label">
+          <text>{{item.icon}} {{item.name}} ({{item.items.length}})</text>
+        </view>
+        <view class="item-list">
+          <view
+            class="item-row"
+            wx:for="{{item.items}}"
+            wx:for-item="goods"
+            wx:key="id"
+          >
+            <view class="item-left" bindtap="handleBuy" data-id="{{goods.id}}">
+              <view class="check-circle"></view>
+              <text class="item-name">{{goods.name}}</text>
+            </view>
+            <view class="item-right">
+              <text class="item-quantity" wx:if="{{goods.quantity}}">{{goods.quantity}}</text>
+              <text class="item-price" wx:if="{{goods.price}}">¥{{goods.price}}</text>
+              <view class="delete-btn" catchtap="handleDelete" data-id="{{goods.id}}">✕</view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <!-- 已买区域 -->
+  <view wx:if="{{boughtItems.length > 0}}">
+    <view class="section-header">
+      <text class="section-title">✅ 已买 ({{boughtItems.length}})</text>
+      <text class="clear-btn" bindtap="handleArchive">清空</text>
+    </view>
+    <view class="item-list bought-list">
+      <view
+        class="item-row bought-row"
+        wx:for="{{boughtItems}}"
+        wx:key="id"
+      >
+        <view class="item-left" bindtap="handleUnbuy" data-id="{{item.id}}">
+          <view class="check-circle checked">✓</view>
+          <text class="item-name bought-name">{{item.name}}</text>
+        </view>
+        <text class="buyer-name">{{item.buyer_name}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部快捷入口 -->
+  <view class="bottom-links">
+    <view class="bottom-link" bindtap="goHistory">📋 历史记录</view>
+    <view class="bottom-link" bindtap="goFrequent">⭐ 常买清单</view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty" wx:if="{{!loading && unboughtItems.length === 0 && boughtItems.length === 0}}">
+    <text class="empty-icon">🛒</text>
+    <text class="empty-title">购物清单是空的</text>
+    <text class="empty-text">在上方输入框添加你需要购买的商品</text>
+  </view>
+
+  <!-- AI 智能拆分确认弹窗 -->
+  <view class="modal-mask" wx:if="{{showSmartModal}}" bindtap="closeSmartModal">
+    <view class="modal-content" catchtap="">
+      <view class="modal-title">🤖 AI 智能拆分</view>
+      <view class="smart-desc">已为你拆解出以下商品，勾选需要的：</view>
+      <view class="smart-list">
+        <view
+          class="smart-item"
+          wx:for="{{smartItems}}"
+          wx:key="index"
+          bindtap="toggleSmartItem"
+          data-index="{{index}}"
+        >
+          <view class="check-box {{item.checked ? 'selected' : ''}}">
+            <text wx:if="{{item.checked}}">✓</text>
+          </view>
+          <text class="smart-name">{{item.name}}</text>
+          <text class="smart-quantity" wx:if="{{item.quantity}}">{{item.quantity}}</text>
+        </view>
+      </view>
+      <view class="modal-actions">
+        <view class="modal-btn cancel" bindtap="closeSmartModal">取消</view>
+        <view class="modal-btn confirm" bindtap="handleSmartConfirm">确认添加</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 添加商品弹窗 -->
+  <view class="modal-mask" wx:if="{{showAddModal}}" bindtap="closeAddModal">
+    <view class="modal-content" catchtap="">
+      <view class="modal-title">添加商品</view>
+      <view class="form-group">
+        <text class="form-label">名称 *</text>
+        <input class="form-input" placeholder="商品名称" value="{{form.name}}" bindinput="onFormInput" data-field="name" />
+      </view>
+      <view class="form-row">
+        <view class="form-group form-half">
+          <text class="form-label">数量</text>
+          <view class="quantity-row">
+            <input class="form-input" placeholder="数量" type="digit" value="{{form.quantityNum}}" bindinput="onFormInput" data-field="quantityNum" />
+            <picker mode="selector" range="{{unitOptions}}" value="{{form.unitIndex}}" bindchange="onUnitChange">
+              <view class="unit-picker">{{unitOptions[form.unitIndex]}} ▾</view>
+            </picker>
+          </view>
+        </view>
+        <view class="form-group form-half">
+          <text class="form-label">预估价</text>
+          <input class="form-input" placeholder="¥" type="digit" value="{{form.price}}" bindinput="onFormInput" data-field="price" />
+        </view>
+      </view>
+      <view class="form-group">
+        <text class="form-label">分类</text>
+        <picker mode="selector" range="{{categoryOptions}}" range-key="name" value="{{form.categoryIndex}}" bindchange="onCategoryChange">
+          <view class="form-input picker-value">{{categoryOptions[form.categoryIndex].icon}} {{categoryOptions[form.categoryIndex].name}} ▾</view>
+        </picker>
+      </view>
+      <view class="form-group">
+        <text class="form-label">备注</text>
+        <input class="form-input" placeholder="品牌偏好、规格要求等" value="{{form.note}}" bindinput="onFormInput" data-field="note" />
+      </view>
+      <view class="modal-actions">
+        <view class="modal-btn cancel" bindtap="closeAddModal">取消</view>
+        <view class="modal-btn confirm" bindtap="handleFormAdd">确认添加</view>
+      </view>
+    </view>
+  </view>
+</view>

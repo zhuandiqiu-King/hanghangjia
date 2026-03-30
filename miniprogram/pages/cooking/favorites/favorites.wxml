@@ -1,0 +1,35 @@
+<view class="favorites-page">
+  <view class="recipe-grid">
+    <view
+      wx:for="{{recipes}}"
+      wx:key="id"
+      class="recipe-card"
+      bindtap="onRecipeTap"
+      bindlongpress="onLongPress"
+      data-id="{{item.id}}"
+      data-name="{{item.name}}"
+    >
+      <view class="recipe-cover">
+        <image wx:if="{{item.cover_image}}" src="{{item.cover_image}}" mode="aspectFill" class="cover-img" />
+        <view wx:else class="cover-placeholder">
+          <text class="placeholder-icon">🍳</text>
+        </view>
+        <view class="recipe-time" wx:if="{{item.cook_time}}">
+          <text>⏱ {{item.cook_time}}min</text>
+        </view>
+      </view>
+      <view class="recipe-info">
+        <text class="recipe-name">{{item.name}}</text>
+        <text class="recipe-difficulty">{{difficultyMap[item.difficulty] || '简单'}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{loading}}" class="loading-tip">加载中...</view>
+  <view wx:if="{{!loading && !hasMore && recipes.length > 0}}" class="loading-tip">没有更多了</view>
+  <view wx:if="{{!loading && recipes.length === 0}}" class="empty-state">
+    <text class="empty-icon">🤍</text>
+    <text class="empty-text">还没有收藏菜谱</text>
+    <text class="empty-hint">去浏览菜谱，发现美味吧</text>
+  </view>
+</view>

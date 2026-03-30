@@ -12,7 +12,19 @@ Page({
   onShow() {
     const token = wx.getStorageSync('token')
     if (!token) {
-      wx.redirectTo({ url: '/pages/login/login' })
+      wx.showModal({
+        title: '提示',
+        content: '登录后才能使用此功能',
+        confirmText: '去登录',
+        cancelText: '返回',
+        success(res) {
+          if (res.confirm) {
+            wx.navigateTo({ url: '/pages/login/login' })
+          } else {
+            wx.navigateBack()
+          }
+        },
+      })
       return
     }
     const app = getApp()

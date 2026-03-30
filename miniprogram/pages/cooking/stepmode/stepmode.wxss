@@ -1,0 +1,105 @@
+.stepmode-page {
+  min-height: 100vh;
+  background: #2C3E50;
+  display: flex;
+  flex-direction: column;
+  color: #fff;
+}
+
+/* 顶部栏 */
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 80rpx 32rpx 24rpx;
+}
+.recipe-name {
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.7);
+  flex: 1;
+}
+.step-indicator {
+  font-size: 26rpx;
+  color: rgba(255, 255, 255, 0.5);
+  margin-right: 24rpx;
+}
+.close-btn {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+}
+
+/* 步骤内容 */
+.step-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60rpx 48rpx;
+}
+.step-content {
+  font-size: 44rpx;
+  font-weight: bold;
+  line-height: 1.6;
+  text-align: center;
+  color: #fff;
+}
+.step-tip-box {
+  margin-top: 40rpx;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 20rpx 32rpx;
+  border-radius: 16rpx;
+}
+.tip-text {
+  font-size: 26rpx;
+  color: #F1C40F;
+  line-height: 1.5;
+}
+
+/* 底部导航 */
+.bottom-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 32rpx;
+  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+}
+.nav-btn {
+  font-size: 28rpx;
+  padding: 16rpx 32rpx;
+  border-radius: 12rpx;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  min-width: 160rpx;
+  text-align: center;
+}
+.nav-btn.next {
+  background: #2ECC71;
+}
+.nav-btn.disabled {
+  opacity: 0.3;
+}
+
+/* 进度点 */
+.progress-dots {
+  display: flex;
+  gap: 12rpx;
+  align-items: center;
+}
+.dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+}
+.dot.active {
+  width: 24rpx;
+  border-radius: 6rpx;
+  background: #2ECC71;
+}

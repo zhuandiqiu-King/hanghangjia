@@ -24,6 +24,7 @@ const CHARACTER_OPTIONS = [
 
 Page({
   data: {
+    loggedIn: false,
     nickname: '',
     avatarUrl: '',
     emojiAvatar: '😊',
@@ -50,12 +51,17 @@ Page({
 
   onShow() {
     const token = wx.getStorageSync('token')
-    if (!token) {
-      wx.redirectTo({ url: '/pages/login/login' })
-      return
+    if (token) {
+      this.setData({ loggedIn: true })
+      this.loadProfile()
+      this.loadFamilyInfo()
+    } else {
+      this.setData({ loggedIn: false, loading: false })
     }
-    this.loadProfile()
-    this.loadFamilyInfo()
+  },
+
+  goLogin() {
+    wx.navigateTo({ url: '/pages/login/login' })
   },
 
   async loadFamilyInfo() {

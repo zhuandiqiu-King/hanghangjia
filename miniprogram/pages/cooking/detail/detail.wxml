@@ -1,0 +1,99 @@
+<view class="detail-page" wx:if="{{recipe}}">
+  <!-- 封面 -->
+  <view class="cover-section">
+    <image wx:if="{{recipe.cover_image}}" src="{{recipe.cover_image}}" mode="aspectFill" class="cover-img" />
+    <view wx:else class="cover-placeholder">
+      <text class="placeholder-icon">🍳</text>
+    </view>
+  </view>
+
+  <!-- 基本信息 -->
+  <view class="info-section">
+    <view class="title-row">
+      <text class="recipe-title">{{recipe.name}}</text>
+      <view class="fav-btn" bindtap="onFavoriteTap">
+        <text>{{recipe.is_favorited ? '❤️' : '🤍'}} {{recipe.favorite_count || 0}}</text>
+      </view>
+    </view>
+
+    <view class="meta-row">
+      <text class="meta-item" wx:if="{{recipe.cook_time}}">⏱ {{recipe.cook_time}}分钟</text>
+      <text class="meta-item" wx:if="{{recipe.servings}}">👤 {{recipe.servings}}人份</text>
+      <text class="meta-item">📊 {{difficultyMap[recipe.difficulty] || '简单'}}</text>
+    </view>
+
+    <view class="tag-row" wx:if="{{recipe.category}}">
+      <text class="tag">{{categoryMap[recipe.category] || recipe.category}}</text>
+    </view>
+
+    <view class="desc" wx:if="{{recipe.description}}">
+      <text>{{recipe.description}}</text>
+    </view>
+  </view>
+
+  <!-- 食材清单 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">食材清单</text>
+      <text class="section-action" bindtap="showAddShopping">🛒 加入购物清单</text>
+    </view>
+    <view wx:for="{{ingredientGroups}}" wx:key="name" class="ingredient-group">
+      <text class="group-label">{{item.name}}</text>
+      <view wx:for="{{item.items}}" wx:for-item="ing" wx:key="id" class="ingredient-row">
+        <text class="ing-name">{{ing.name}}</text>
+        <text class="ing-amount">{{ing.amount || ''}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 做法步骤 -->
+  <view class="section">
+    <text class="section-title">做法步骤</text>
+    <view wx:for="{{recipe.steps}}" wx:key="id" class="step-item">
+      <view class="step-number">{{item.step_number}}</view>
+      <view class="step-content">
+        <text class="step-text">{{item.content}}</text>
+        <text wx:if="{{item.tip}}" class="step-tip">💡 {{item.tip}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 小贴士 -->
+  <view class="section" wx:if="{{recipe.tips}}">
+    <text class="section-title">小贴士</text>
+    <view class="tips-box">
+      <text>💡 {{recipe.tips}}</text>
+    </view>
+  </view>
+
+  <!-- 底部按钮 -->
+  <view class="bottom-bar">
+    <view class="btn-start" bindtap="startCooking">🍳 开始做菜</view>
+  </view>
+
+  <!-- 购物清单弹窗 -->
+  <view wx:if="{{showShoppingModal}}" class="modal-mask" bindtap="hideShoppingModal">
+    <view class="modal-content" catchtap="">
+      <text class="modal-title">选择需要购买的食材</text>
+      <scroll-view scroll-y class="modal-list">
+        <view
+          wx:for="{{shoppingItems}}"
+          wx:key="name"
+          class="shopping-check-item"
+          bindtap="toggleShoppingItem"
+          data-idx="{{index}}"
+        >
+          <view class="check-circle {{item.checked ? 'checked' : ''}}">
+            <text wx:if="{{item.checked}}">✓</text>
+          </view>
+          <text class="check-name">{{item.name}}</text>
+          <text class="check-amount">{{item.amount || ''}}</text>
+        </view>
+      </scroll-view>
+      <view class="modal-actions">
+        <view class="modal-btn cancel" bindtap="hideShoppingModal">取消</view>
+        <view class="modal-btn confirm" bindtap="confirmAddShopping">确认添加</view>
+      </view>
+    </view>
+  </view>
+</view>

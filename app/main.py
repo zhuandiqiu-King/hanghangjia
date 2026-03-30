@@ -6,7 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy import inspect, text
 
 from app.database import engine, Base
-from app.routers import plants, watering, auth, chat, user, family
+from app.routers import plants, watering, auth, chat, user, family, vocab, shopping, cooking, tts
 from app.scheduler import start_scheduler, stop_scheduler
 
 # 创建数据库表（含新增的 families、family_members）
@@ -51,11 +51,18 @@ app.include_router(watering.router)
 app.include_router(chat.router)
 app.include_router(user.router)
 app.include_router(family.router)
+app.include_router(vocab.router)
+app.include_router(shopping.router)
+app.include_router(cooking.router)
+app.include_router(tts.router)
 
 
 @app.on_event("startup")
 def on_startup():
     start_scheduler()
+    # 导入预置菜谱
+    from app.seed_recipes import seed
+    seed()
 
 
 @app.on_event("shutdown")
