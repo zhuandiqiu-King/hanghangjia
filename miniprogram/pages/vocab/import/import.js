@@ -25,43 +25,60 @@ Page({
     })
   },
 
+  /**
+   * 压缩图片，确保 base64 不超过云托管请求体限制
+   * 返回 Promise<string>，resolve 压缩后的临时文件路径
+   */
+  _compressImage(src) {
+    return new Promise((resolve, reject) => {
+      wx.compressImage({
+        src,
+        quality: 60,
+        success: (res) => resolve(res.tempFilePath),
+        fail: () => resolve(src), // 压缩失败则用原图
+      })
+    })
+  },
+
   /** 开始识别 */
   startRecognize() {
     this.setData({ step: 'loading' })
 
-    // 读取图片为 base64
-    const fs = wx.getFileSystemManager()
-    fs.readFile({
-      filePath: this.data.imageSrc,
-      encoding: 'base64',
-      success: (res) => {
-        const base64 = res.data
-        api.request({
-          url: '/api/vocab/ocr-words',
-          method: 'POST',
-          data: { image: base64 },
-          timeout: 60000,
-        }).then((data) => {
-          const words = (data.words || []).map((w, i) => ({
-            ...w,
-            idx: i,
-          }))
-          if (!words.length) {
-            wx.showToast({ title: '未识别到单词', icon: 'none' })
+    // 先压缩图片再读取 base64
+    this._compressImage(this.data.imageSrc).then((compressedPath) => {
+      const fs = wx.getFileSystemManager()
+      fs.readFile({
+        filePath: compressedPath,
+        encoding: 'base64',
+        success: (res) => {
+          const base64 = res.data
+          api.request({
+            url: '/api/vocab/ocr-words',
+            method: 'POST',
+            data: { image: base64 },
+            timeout: 60000,
+          }).then((data) => {
+            const words = (data.words || []).map((w, i) => ({
+              ...w,
+              idx: i,
+            }))
+            if (!words.length) {
+              wx.showToast({ title: '未识别到单词', icon: 'none' })
+              this.setData({ step: 'photo' })
+              return
+            }
+            this.setData({ words, step: 'confirm' })
+          }).catch((err) => {
+            console.error('识别失败', err)
+            wx.showToast({ title: '识别失败，请重试', icon: 'none' })
             this.setData({ step: 'photo' })
-            return
-          }
-          this.setData({ words, step: 'confirm' })
-        }).catch((err) => {
-          console.error('识别失败', err)
-          wx.showToast({ title: '识别失败，请重试', icon: 'none' })
+          })
+        },
+        fail: () => {
+          wx.showToast({ title: '读取图片失败', icon: 'none' })
           this.setData({ step: 'photo' })
-        })
-      },
-      fail: () => {
-        wx.showToast({ title: '读取图片失败', icon: 'none' })
-        this.setData({ step: 'photo' })
-      },
+        },
+      })
     })
   },
 

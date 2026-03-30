@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -10,7 +12,7 @@ from app import crud
 router = APIRouter(tags=["watering"])
 
 
-def _get_family_id(current_user: User) -> int | None:
+def _get_family_id(current_user: User):
     return current_user.current_family_id
     return current_user.current_family_id
 

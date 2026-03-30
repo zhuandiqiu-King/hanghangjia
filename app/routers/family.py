@@ -68,7 +68,7 @@ def _generate_code(length: int = 8) -> str:
     return "".join(random.choices(string.ascii_uppercase + string.digits, k=length))
 
 
-def _get_first_family_id(db: Session, user_id: int, exclude_id: int = None) -> int | None:
+def _get_first_family_id(db: Session, user_id: int, exclude_id: int = None):
     """获取用户的第一个家庭 ID（排除指定的）"""
     stmt = select(FamilyMember.family_id).where(FamilyMember.user_id == user_id)
     if exclude_id:

@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import json
 import os
 import re
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -16,7 +19,7 @@ from app import crud
 router = APIRouter(prefix="/api/plants", tags=["plants"])
 
 
-def _get_family_id(current_user: User) -> int | None:
+def _get_family_id(current_user: User) -> Optional[int]:
     """获取当前用户的活跃家庭 ID，没有家庭返回 None"""
     return current_user.current_family_id
 

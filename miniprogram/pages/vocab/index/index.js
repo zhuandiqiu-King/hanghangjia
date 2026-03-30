@@ -25,6 +25,23 @@ Page({
       } else {
         this.setData({ currentChild: null, wordbooks: [] })
       }
+    }).catch((err) => {
+      const msg = (err && err.message) || ''
+      if (msg.indexOf('请先加入一个家庭') !== -1) {
+        wx.showModal({
+          title: '尚未加入家庭',
+          content: '使用背单词功能需要先创建或加入一个家庭，是否前往设置？',
+          confirmText: '去设置',
+          cancelText: '稍后',
+          success(res) {
+            if (res.confirm) {
+              wx.switchTab({ url: '/pages/profile/profile' })
+            }
+          },
+        })
+      } else {
+        wx.showToast({ title: msg || '加载失败', icon: 'none' })
+      }
     })
   },
 
